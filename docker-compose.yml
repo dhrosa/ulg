@@ -1,0 +1,21 @@
+services:
+  build-fe:
+    build: ./fe
+    volumes:
+      - jsx-out:/jsx/out
+    command: "npm run build"
+    develop:
+      watch:
+        - action: sync
+          path: ./fe
+          target: /jsx/src
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    volumes:
+      - jsx-out:/jsx-out
+
+volumes:
+  jsx-out:

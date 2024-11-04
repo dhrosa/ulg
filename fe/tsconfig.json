@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+      "target": "ESNext",
+      "esModuleInterop": true,
+      "jsx": "react-jsx",
+      "strictNullChecks": true,
+      "moduleResolution": "Node",
+      "strict": true
+    },
+    "include": ["*.tsx"]
+  }
+  
