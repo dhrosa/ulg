@@ -1,0 +1,44 @@
+$family-primary:
+  Inter,
+  SF Pro,
+  Segoe UI,
+  Roboto,
+  Oxygen,
+  Ubuntu,
+  Helvetica Neue,
+  Helvetica,
+  Arial,
+  sans-serif;
+
+$family-code:
+  Inconsolata,
+  Hack,
+  SF Mono,
+  Roboto Mono,
+  Source Code Pro,
+  Ubuntu Mono,
+  monospace;
+
+@use "bulma/sass";
+@use "bulma/sass/utilities/mixins" as mixins;
+
+.letter-card {
+  @extend .card;
+
+  $card-width: 48px;
+  font-size: 32px;
+
+  width: $card-width;
+  height: $card-width * (3.5 / 2.1);
+
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+}
+
+.letter-card-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
