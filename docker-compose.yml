@@ -10,12 +10,26 @@ services:
           path: ./fe
           target: /jsx/src
 
+  be:
+    build: ./be
+    command: "hatch run fastapi run src/be/main.py --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    develop:
+      watch:
+        - action: sync
+          path: ./be
+          target: /be/
+
   nginx:
     build: ./nginx
+    depends_on:
+      - be
     ports:
       - "80:80"
     volumes:
       - jsx-out:/jsx-out
+      
 
 volumes:
   jsx-out:

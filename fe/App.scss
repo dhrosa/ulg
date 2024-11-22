@@ -22,23 +22,45 @@ $family-code:
 @use "bulma/sass";
 @use "bulma/sass/utilities/mixins" as mixins;
 
-.letter-card {
-  @extend .card;
-
-  $card-width: 48px;
-  font-size: 32px;
-
-  width: $card-width;
-  height: $card-width * (3.5 / 2.1);
-
+main {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  align-content: center;
+  align-items: center;
+
+  width: 100%;
+  height: 100%;
+}
+
+$card-width: 48px;
+$card-height: $card-width * 3.5 / 2.1;
+$card-font-size: 32px;
+.letter-card {
+  @extend .card;
+  font-size: $card-font-size;
+
+  width: $card-width;
+
+  .text {
+    width: 100%;
+    height: $card-height;
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
+  }
+
+  .label {
+    width: 100%;
+  }
 }
 
 .letter-card-row {
+  width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
+
+  margin-top: $card-height;
 }
