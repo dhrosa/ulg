@@ -1,4 +1,13 @@
 import React from "react";
+import { Link } from "react-router-dom";
+
+function NavLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Link to={href} className="navbar-item">
+      {label}
+    </Link>
+  );
+}
 
 function HamburgerButton({
   onClick,
@@ -39,9 +48,8 @@ export default function Nav() {
       <div className={"navbar-menu " + (menuActive ? "is-active" : "")}>
         <div className="navbar-start"></div>
         <div className="navbar-end">
-          <a href="/" className="navbar-item">
-            Home
-          </a>
+          <NavLink href="/" label="Home" />
+          <NavLink href="/new" label="New Game" />
         </div>
       </div>
     </nav>

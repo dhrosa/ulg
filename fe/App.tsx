@@ -1,23 +1,17 @@
-import React from "react";
 import "./App.scss";
-import Card, { PLAYER_COLORS } from "./Card";
 import Nav from "./Nav";
+import { Routes, Route } from "react-router-dom";
+import NewGamePage from "./NewGamePage";
 
 export default function App() {
   return (
     <div className="container">
       <Nav />
       <main>
-        <div className="letter-card-row">
-          {[..."splat".toUpperCase()].map((letter, index) => (
-            <Card
-              key={index}
-              text={letter}
-              color={PLAYER_COLORS[index]}
-              label={letter}
-            />
-          ))}
-        </div>
+        <Routes>
+          <Route path="/" element={<p>hi</p>} />
+          <Route path="/new" element={<NewGamePage />} />
+        </Routes>
       </main>
     </div>
   );
