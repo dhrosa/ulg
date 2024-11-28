@@ -12,7 +12,7 @@ services:
 
   be:
     build: ./be
-    command: "hatch run fastapi run src/be/main.py --host 0.0.0.0 --port 8000"
+    command: "hatch run fastapi dev src/be/main.py --host 0.0.0.0 --port 8000"
     ports:
       - "8000:8000"
     stop_signal: SIGINT
@@ -30,7 +30,6 @@ services:
       - "80:80"
     volumes:
       - jsx-out:/jsx-out
-      
 
 volumes:
   jsx-out:
