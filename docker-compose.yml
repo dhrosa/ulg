@@ -28,8 +28,10 @@ services:
       - be
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - jsx-out:/jsx-out
+      - ./ssl:/ssl:ro
 
 volumes:
   jsx-out:
