@@ -1,4 +1,5 @@
 import logging
+from collections import Counter
 from contextlib import asynccontextmanager
 from typing import AsyncIterator, Literal, TypeAlias
 
@@ -63,11 +64,16 @@ class LobbyPhase(CamelModel):
     name: Literal["lobby"] = "lobby"
 
 
-class VotingPhase(CamelModel):
-    name: Literal["voting"] = "voting"
+class VotePhase(CamelModel):
+    name: Literal["vote"] = "vote"
 
 
-Phase: TypeAlias = LobbyPhase | VotingPhase
+class CluePhase(CamelModel):
+    name: Literal["clue"] = "clue"
+    clue_giver: str
+
+
+Phase: TypeAlias = LobbyPhase | VotePhase | CluePhase
 
 
 class GameData(CamelModel):
@@ -103,8 +109,13 @@ class Game:
             except WebSocketDisconnect:
                 logger.info("Skipping player %s due to disconnection", player.name)
 
-    def start(self) -> None:
-        self.phase = VotingPhase()
+    def top_vote(self) -> str:
+        vote_counts = Counter[str](player.vote for player in self.players.values())
+        top_vote, count = vote_counts.most_common()[0]
+        quorum = len(self.players) // 2 + 1
+        if count >= quorum:
+            return top_vote
+        return ""
 
 
 app = FastAPI(root_url="/api", lifespan=lifespan)
@@ -195,6 +206,9 @@ class VoteRequest(CamelModel):
 async def player_vote(game_id: str, name: str, request: VoteRequest) -> None:
     game, player = game_and_player_or_404(game_id, name)
     player.vote = request.vote
+    if top_vote := game.top_vote():
+        logger.info("%s selected as clue giver", top_vote)
+        game.phase = CluePhase(clue_giver=top_vote)
     await game.broadcast()
 
 
@@ -221,5 +235,5 @@ async def game_start(game_id: str) -> None:
         if player.socket is None:
             raise HTTPException(status_code=409, detail="Player {player.name}")
 
-    game.start()
+    game.phase = VotePhase()
     await game.broadcast()

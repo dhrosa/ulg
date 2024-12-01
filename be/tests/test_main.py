@@ -4,7 +4,16 @@ from fastapi.testclient import TestClient
 from pytest import raises
 from starlette.websockets import WebSocketDisconnect
 
-from be.main import ClueCandidate, GameData, GameSettings, PlayerData, app
+from be.main import (
+    ClueCandidate,
+    CluePhase,
+    GameData,
+    GameSettings,
+    LobbyPhase,
+    PlayerData,
+    VotePhase,
+    app,
+)
 
 T = TypeVar("T")
 
@@ -38,7 +47,7 @@ def test_new_game() -> None:
     game = new_game(GameSettings(player_word_length=5))
     assert game.id
     assert game.settings.player_word_length == 5
-    assert game.phase.name == "lobby"
+    assert isinstance(game.phase, LobbyPhase)
 
     assert game.id in list_games()
 
@@ -147,14 +156,14 @@ def test_start_game() -> None:
     add_player(game.id, "A")
     add_player(game.id, "B")
 
-    assert get_game(game.id).phase.name == "lobby"
+    assert isinstance(get_game(game.id).phase, LobbyPhase)
 
     with (
         client.websocket_connect(f"/game/{game.id}/player/A"),
         client.websocket_connect(f"/game/{game.id}/player/B"),
     ):
         assert client.post(f"/game/{game.id}/start").status_code == 200
-        assert get_game(game.id).phase.name == "voting"
+        assert isinstance(get_game(game.id).phase, VotePhase)
 
 
 def test_clue_candidate() -> None:
@@ -196,12 +205,22 @@ def test_vote() -> None:
         client.websocket_connect(f"/game/{game.id}/player/B"),
     ):
         assert client.post(f"/game/{game.id}/start").status_code == 200
-
-        assert get_game(game.id).players[0].vote == ""
+        assert [p.vote for p in get_game(game.id).players] == ["", ""]
+        assert isinstance(get_game(game.id).phase, VotePhase)
 
         assert (
             client.put(f"/game/{game.id}/player/A/vote", json={"vote": "B"}).status_code
             == 200
         )
+        assert [p.vote for p in get_game(game.id).players] == ["B", ""]
+        assert isinstance(get_game(game.id).phase, VotePhase)
 
-        assert get_game(game.id).players[0].vote == "B"
+        assert (
+            client.put(f"/game/{game.id}/player/B/vote", json={"vote": "B"}).status_code
+            == 200
+        )
+        assert [p.vote for p in get_game(game.id).players] == ["B", "B"]
+
+        clue_phase = get_game(game.id).phase
+        assert isinstance(clue_phase, CluePhase)
+        assert clue_phase.clue_giver == "B"
