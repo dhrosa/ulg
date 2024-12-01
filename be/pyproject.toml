@@ -16,9 +16,32 @@ dependencies = [
   ]
 
 
-[tool.hatch.envs.types]
-extra-dependencies = [
-  "mypy>=1.0.0",
+[tool.mypy]
+mypy_path = "stubs"
+
+[tool.hatch.envs.style]
+dependencies = ["setuptools", "isort", "black", "pylama", "mypy", "pytest"]
+
+[tool.hatch.envs.style.scripts]
+format = [
+       "isort --color src tests",
+       "black src tests",
 ]
-[tool.hatch.envs.types.scripts]
-check = "mypy --install-types --non-interactive {args:src/be tests}"
+check = [
+      "pylama --ignore E203 src tests", # E203 is not pep8-compliant, and black breaks it
+      "mypy --strict --pretty src tests",
+] 
+all = [
+    "hatch run style:format",
+    "hatch run style:check",
+]
+
+[tool.hatch.envs.test]
+dependencies = ["pytest"]
+
+[tool.hatch.envs.test.scripts]
+all = ["pytest"]
+
+[tool.pytest.ini_options]
+addopts = "--no-header -W error --showlocals -vv"
+log_level = "DEBUG"

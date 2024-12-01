@@ -1,18 +1,17 @@
-from fastapi import FastAPI, WebSocket
-from fastapi_camelcase import CamelModel
-import coolname
-from pydantic import Field
-from typing import Literal
 import logging
 from contextlib import asynccontextmanager
+from typing import AsyncIterator
 
+import coolname
+from fastapi import FastAPI, WebSocket
+from fastapi_camelcase import CamelModel
 from rich.logging import RichHandler
 
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logging.basicConfig(
         level="INFO",
         format="%(message)s",
@@ -35,10 +34,12 @@ app = FastAPI(root_url="/api", lifespan=lifespan)
 
 games = dict[str, Game]()
 
+
 @app.get("/")
 async def root() -> str:
     logger.info("hi")
     return "test"
+
 
 @app.post("/game")
 async def game_new(settings: GameSettings) -> Game:
@@ -51,7 +52,7 @@ async def game_new(settings: GameSettings) -> Game:
 
 
 @app.websocket("/socket")
-async def socket_test(socket: WebSocket):
+async def socket_test(socket: WebSocket) -> None:
     await socket.accept()
     logger.info("Accepted socket")
     while True:
