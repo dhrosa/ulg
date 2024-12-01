@@ -50,6 +50,13 @@ async def game_new(settings: GameSettings) -> Game:
     return game
 
 
+@app.delete("/game/{game_id}")
+async def game_delete(game_id: str) -> None:
+    game = games.pop(game_id, None)
+    if game is None:
+        raise HTTPException(status_code=404, detail="Game not found")
+
+
 @app.websocket("/game/{game_id}")
 async def game_connect(game_id: str, socket: WebSocket) -> None:
     game = games.get(game_id)
