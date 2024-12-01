@@ -29,6 +29,10 @@ def list_games() -> list[str]:
     return cast(list[str], response.json())
 
 
+def add_player(game_id: str, name: str) -> None:
+    assert client.post(f"/game/{game_id}/player/{name}").status_code == 200
+
+
 def test_new_game() -> None:
     """Create game and check that it exists."""
     game = new_game(GameSettings(player_word_length=5))
@@ -99,17 +103,29 @@ def test_delete_nonexistent_player() -> None:
 
 
 def test_connect() -> None:
-    """Websocket connection should return the game state."""
+    """"""
     game = new_game()
-    with client.websocket_connect(f"/game/{game.id}") as socket:
-        data = socket.receive_json()
-        assert GameData(**data) == game
+    add_player(game.id, "A")
+    assert get_game(game.id).players == [PlayerData(name="A", connected=False)]
+    with client.websocket_connect(f"/game/{game.id}/player/A"):
+        assert get_game(game.id).players == [PlayerData(name="A", connected=True)]
+    assert get_game(game.id).players == [PlayerData(name="A", connected=False)]
 
 
 def test_connect_nonexistent_game() -> None:
-    """Websocket connection to nonexistent game should fail."""
+    """Connection to nonexistent game should fail."""
     with raises(WebSocketDisconnect) as e:
-        with client.websocket_connect("/game/nonexistent-game-id"):
+        with client.websocket_connect("/game/nonexistent-game-id/player/A"):
+            pass
+
+    assert e.value.status_code == 404  # type: ignore
+
+
+def test_connect_nonexistent_player() -> None:
+    """Connection to nonexistent player should fail."""
+    game = new_game()
+    with raises(WebSocketDisconnect) as e:
+        with client.websocket_connect(f"/game/{game.id}/player/nonexistent-player"):
             pass
 
     assert e.value.status_code == 404  # type: ignore
