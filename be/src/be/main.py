@@ -40,6 +40,14 @@ async def game_list() -> list[str]:
     return list(games.keys())
 
 
+@app.get("/game/{game_id}")
+async def game_get(game_id: str) -> Game:
+    game = games.get(game_id)
+    if game is None:
+        raise HTTPException(status_code=404, detail="Game not found")
+    return game
+
+
 @app.post("/game")
 async def game_new(settings: GameSettings) -> Game:
     game = Game(

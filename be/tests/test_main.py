@@ -31,6 +31,10 @@ def test_new_game() -> None:
 
     assert game.id in list_games()
 
+    response = client.get(f"/game/{game.id}")
+    assert response.status_code == 200
+    assert Game(**response.json()) == game
+
 
 def test_delete_existing_game() -> None:
     """Delete game and check that it is no longer listed."""
@@ -39,6 +43,9 @@ def test_delete_existing_game() -> None:
     assert response.status_code == 200
 
     assert game.id not in list_games()
+
+    response = client.get(f"/game/{game.id}")
+    assert response.status_code == 404
 
 
 def test_delete_nonexistent_game() -> None:
