@@ -1,8 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi_camelcase import CamelModel
 import coolname
 from pydantic import Field
 from typing import Literal
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class GameSettings(CamelModel):
@@ -67,3 +70,12 @@ async def game_new(settings: GameSettings) -> Game:
     )
     games[game.id] = game
     return game
+
+@app.websocket("/socket")
+async def socket_test(socket: WebSocket):
+    await socket.accept()
+    logger.info("Accepted socket")
+    while True:
+        data = await socket.receive_text()
+        logger.info("Received:", data)
+        await socket.send_text(f"Echo: {data}")
