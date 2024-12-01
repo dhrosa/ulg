@@ -12,6 +12,7 @@ dependencies = [
   "fastapi-camelcase==2.0.0",
   "coolname==2.2.0",
   "websockets==14.1",
+  "rich==13.9.4",
   ]
 
 
