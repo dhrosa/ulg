@@ -35,10 +35,9 @@ app = FastAPI(root_url="/api", lifespan=lifespan)
 games = dict[str, Game]()
 
 
-@app.get("/")
-async def root() -> str:
-    logger.info("hi")
-    return "test"
+@app.get("/game")
+async def game_list() -> list[str]:
+    return list(games.keys())
 
 
 @app.post("/game")

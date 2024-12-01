@@ -20,7 +20,7 @@ dependencies = [
 mypy_path = "stubs"
 
 [tool.hatch.envs.style]
-dependencies = ["setuptools", "isort", "black", "pylama", "mypy", "pytest"]
+dependencies = ["setuptools", "isort", "black", "pylama", "mypy", "pytest", "httpx"]
 
 [tool.hatch.envs.style.scripts]
 format = [
