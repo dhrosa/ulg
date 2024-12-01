@@ -28,19 +28,35 @@ class GameSettings(CamelModel):
     player_word_length: int
 
 
+class ClueCandidate(CamelModel):
+    length: int
+    player_count: int
+    npc_count: int
+    wild: bool
+
+
 class PlayerData(CamelModel):
     name: str
     connected: bool = False
+    clue_candidate: ClueCandidate | None = None
+    vote: str = ""
 
 
 class Player:
     def __init__(self, name: str) -> None:
         self.name = name
         self.socket: WebSocket | None = None
+        self.clue_candidate: ClueCandidate | None = None
+        self.vote = ""
 
     @property
     def data(self) -> PlayerData:
-        return PlayerData(name=self.name, connected=self.socket is not None)
+        return PlayerData(
+            name=self.name,
+            connected=self.socket is not None,
+            clue_candidate=self.clue_candidate,
+            vote=self.vote,
+        )
 
 
 class LobbyPhase(CamelModel):
@@ -103,6 +119,14 @@ def game_or_404(game_id: str) -> Game:
         raise HTTPException(status_code=404, detail="Game not found")
 
 
+def game_and_player_or_404(game_id: str, name: str) -> tuple[Game, Player]:
+    game = game_or_404(game_id)
+    try:
+        return game, game.players[name]
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Player not found")
+
+
 @app.get("/game")
 async def game_list() -> list[str]:
     return list(games.keys())
@@ -147,12 +171,36 @@ async def player_delete(game_id: str, name: str) -> None:
     await game.broadcast()
 
 
+@app.put("/game/{game_id}/player/{name}/clue_candidate")
+async def player_set_clue_candidate(
+    game_id: str, name: str, candidate: ClueCandidate
+) -> None:
+    game, player = game_and_player_or_404(game_id, name)
+    player.clue_candidate = candidate
+    await game.broadcast()
+
+
+@app.delete("/game/{game_id}/player/{name}/clue_candidate")
+async def player_delete_clue_candidate(game_id: str, name: str) -> None:
+    game, player = game_and_player_or_404(game_id, name)
+    player.clue_candidate = None
+    await game.broadcast()
+
+
+class VoteRequest(CamelModel):
+    vote: str
+
+
+@app.put("/game/{game_id}/player/{name}/vote")
+async def player_vote(game_id: str, name: str, request: VoteRequest) -> None:
+    game, player = game_and_player_or_404(game_id, name)
+    player.vote = request.vote
+    await game.broadcast()
+
+
 @app.websocket("/game/{game_id}/player/{name}")
 async def game_connect(game_id: str, name: str, socket: WebSocket) -> None:
-    game = game_or_404(game_id)
-    if name not in game.players:
-        raise HTTPException(status_code=404, detail="Player not found")
-    player = game.players[name]
+    game, player = game_and_player_or_404(game_id, name)
     logger.info("Player connected: %s", name)
     try:
         await socket.accept()
@@ -163,6 +211,7 @@ async def game_connect(game_id: str, name: str, socket: WebSocket) -> None:
         logger.info(f"Player disconnected: {name}, reason: {e}")
     finally:
         player.socket = None
+        await game.broadcast()
 
 
 @app.post("/game/{game_id}/start")
