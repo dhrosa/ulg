@@ -51,14 +51,14 @@ class Game:
     def __init__(self, settings: GameSettings) -> None:
         self.id = coolname.generate_slug(2)
         self.settings = settings
-        self.players = list[Player]()
+        self.players = dict[str, Player]()
 
     @property
     def data(self) -> GameData:
         return GameData(
             id=self.id,
             settings=self.settings,
-            players=[player.data for player in self.players],
+            players=[player.data for player in self.players.values()],
         )
 
 
@@ -89,8 +89,9 @@ async def game_new(settings: GameSettings) -> GameData:
 
 @app.delete("/game/{game_id}")
 async def game_delete(game_id: str) -> None:
-    game = games.pop(game_id, None)
-    if game is None:
+    try:
+        del games[game_id]
+    except KeyError:
         raise HTTPException(status_code=404, detail="Game not found")
 
 
@@ -99,12 +100,9 @@ async def player_add(game_id: str, name: str) -> None:
     game = games.get(game_id)
     if game is None:
         raise HTTPException(status_code=404, detail="Game not found")
-
-    for player in game.players:
-        if player.name == name:
-            raise HTTPException(status_code=409, detail="Player already exists")
-
-    game.players.append(Player(name=name))
+    if name in game.players:
+        raise HTTPException(status_code=409, detail="Player already exists")
+    game.players[name] = Player(name=name)
 
 
 @app.delete("/game/{game_id}/player/{name}")
@@ -112,11 +110,10 @@ async def player_delete(game_id: str, name: str) -> None:
     game = games.get(game_id)
     if game is None:
         raise HTTPException(status_code=404, detail="Game not found")
-
-    players = [player for player in game.players if player.name != name]
-    if len(players) == len(game.players):
+    try:
+        del game.players[name]
+    except KeyError:
         raise HTTPException(status_code=404, detail="Player not found")
-    game.players = players
 
 
 @app.websocket("/game/{game_id}")
