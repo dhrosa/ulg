@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
 import coolname
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi_camelcase import CamelModel
 from rich.logging import RichHandler
 
@@ -50,11 +50,11 @@ async def game_new(settings: GameSettings) -> Game:
     return game
 
 
-@app.websocket("/socket")
-async def socket_test(socket: WebSocket) -> None:
+@app.websocket("/game/{game_id}")
+async def game_connect(game_id: str, socket: WebSocket) -> None:
+    game = games.get(game_id)
+    if game is None:
+        raise HTTPException(status_code=404, detail="Game not found")
     await socket.accept()
-    logger.info("Accepted socket")
-    while True:
-        data = await socket.receive_text()
-        logger.info("Received:", data)
-        await socket.send_text(f"Echo: {data}")
+    await socket.send_json(game.model_dump())
+    await socket.close()
