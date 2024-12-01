@@ -38,6 +38,7 @@ def test_new_game() -> None:
     game = new_game(GameSettings(player_word_length=5))
     assert game.id
     assert game.settings.player_word_length == 5
+    assert game.phase.name == "lobby"
 
     assert game.id in list_games()
 
@@ -129,3 +130,26 @@ def test_connect_nonexistent_player() -> None:
             pass
 
     assert e.value.status_code == 404  # type: ignore
+
+
+def test_start_game_disconnected_player() -> None:
+    """Starting game with a disconnected player should fail."""
+    game = new_game()
+    add_player(game.id, "A")
+    add_player(game.id, "B")
+    with client.websocket_connect(f"/game/{game.id}/player/A"):
+        response = client.post(f"/game/{game.id}/start")
+    assert response.status_code == 409
+
+
+def test_start_game() -> None:
+    game = new_game()
+    add_player(game.id, "A")
+    add_player(game.id, "B")
+
+    with (
+        client.websocket_connect(f"/game/{game.id}/player/A"),
+        client.websocket_connect(f"/game/{game.id}/player/B"),
+    ):
+        assert client.post(f"/game/{game.id}/start").status_code == 200
+        assert get_game(game.id).phase.name == "voting"

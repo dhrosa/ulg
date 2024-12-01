@@ -1,10 +1,11 @@
 import logging
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
+from typing import AsyncIterator, Literal, TypeAlias
 
 import coolname
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi_camelcase import CamelModel
+from pydantic import Field
 from rich.logging import RichHandler
 
 logger = logging.getLogger(__name__)
@@ -42,10 +43,22 @@ class Player:
         return PlayerData(name=self.name, connected=self.socket is not None)
 
 
+class LobbyPhase(CamelModel):
+    name: Literal["lobby"] = "lobby"
+
+
+class VotingPhase(CamelModel):
+    name: Literal["voting"] = "voting"
+
+
+Phase: TypeAlias = LobbyPhase | VotingPhase
+
+
 class GameData(CamelModel):
     id: str
     settings: GameSettings
     players: list[PlayerData] = []
+    phase: Phase = Field(discriminator="name")
 
 
 class Game:
@@ -53,6 +66,7 @@ class Game:
         self.id = coolname.generate_slug(2)
         self.settings = settings
         self.players = dict[str, Player]()
+        self.phase: Phase = LobbyPhase()
 
     @property
     def data(self) -> GameData:
@@ -60,12 +74,33 @@ class Game:
             id=self.id,
             settings=self.settings,
             players=[player.data for player in self.players.values()],
+            phase=self.phase,
         )
+
+    async def broadcast(self) -> None:
+        logger.info("Broadcasting game data.")
+        for player in self.players.values():
+            if player.socket is None:
+                continue
+            try:
+                await player.socket.send_json(self.data.model_dump())
+            except WebSocketDisconnect:
+                logger.info("Skipping player %s due to disconnection", player.name)
+
+    def start(self) -> None:
+        self.phase = VotingPhase()
 
 
 app = FastAPI(root_url="/api", lifespan=lifespan)
 
 games = dict[str, Game]()
+
+
+def game_or_404(game_id: str) -> Game:
+    try:
+        return games[game_id]
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Game not found")
 
 
 @app.get("/game")
@@ -75,10 +110,7 @@ async def game_list() -> list[str]:
 
 @app.get("/game/{game_id}")
 async def game_get(game_id: str) -> GameData:
-    game = games.get(game_id)
-    if game is None:
-        raise HTTPException(status_code=404, detail="Game not found")
-    return game.data
+    return game_or_404(game_id).data
 
 
 @app.post("/game")
@@ -98,40 +130,47 @@ async def game_delete(game_id: str) -> None:
 
 @app.post("/game/{game_id}/player/{name}")
 async def player_add(game_id: str, name: str) -> None:
-    game = games.get(game_id)
-    if game is None:
-        raise HTTPException(status_code=404, detail="Game not found")
+    game = game_or_404(game_id)
     if name in game.players:
         raise HTTPException(status_code=409, detail="Player already exists")
     game.players[name] = Player(name=name)
+    await game.broadcast()
 
 
 @app.delete("/game/{game_id}/player/{name}")
 async def player_delete(game_id: str, name: str) -> None:
-    game = games.get(game_id)
-    if game is None:
-        raise HTTPException(status_code=404, detail="Game not found")
+    game = game_or_404(game_id)
     try:
         del game.players[name]
     except KeyError:
         raise HTTPException(status_code=404, detail="Player not found")
+    await game.broadcast()
 
 
 @app.websocket("/game/{game_id}/player/{name}")
 async def game_connect(game_id: str, name: str, socket: WebSocket) -> None:
-    game = games.get(game_id)
-    if game is None:
-        raise HTTPException(status_code=404, detail="Game not found")
+    game = game_or_404(game_id)
     if name not in game.players:
         raise HTTPException(status_code=404, detail="Player not found")
     player = game.players[name]
     logger.info("Player connected: %s", name)
-    player.socket = socket
     try:
         await socket.accept()
-        await socket.send_json(game.data.model_dump())
+        player.socket = socket
+        await game.broadcast()
         await socket.receive_json()
     except WebSocketDisconnect as e:
         logger.info(f"Player disconnected: {name}, reason: {e}")
     finally:
         player.socket = None
+
+
+@app.post("/game/{game_id}/start")
+async def game_start(game_id: str) -> None:
+    game = game_or_404(game_id)
+    for player in game.players.values():
+        if player.socket is None:
+            raise HTTPException(status_code=409, detail="Player {player.name}")
+
+    game.start()
+    await game.broadcast()
