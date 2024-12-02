@@ -21,6 +21,39 @@ function readyStateName(readyState: ReadyState) {
   }
 }
 
+interface Player {
+  name: string;
+  connected: boolean;
+}
+
+interface GameData {
+  players: Player[];
+}
+
+function ConnectionTag({ connected }: { connected: boolean }) {
+  return (
+    <span className={`tag ${connected ? "is-success" : "is-danger"}`}>
+      {connected ? "Connected" : "Disconnected"}
+    </span>
+  );
+}
+
+function PlayerList({ gameData }: { gameData: GameData }) {
+  return (
+    <>
+      <h3>Players</h3>
+      <ul>
+        {gameData.players.map((player) => (
+          <li key={player.name}>
+            <span>{player.name}</span>
+            <ConnectionTag connected={player.connected} />
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 function LoggedOutPage({
   setPlayerName,
 }: {
@@ -53,11 +86,15 @@ function LoggedInPage({
 }) {
   const gameUrl = `/api/game/${gameId}`;
 
-  const [gameData, setGameData] = React.useState<object | null>(null);
-
-  const { lastJsonMessage, readyState } = useWebSocket(
-    `${gameUrl}/player/${playerName}`
+  const [initialGameData, setInitialGameData] = React.useState<object | null>(
+    null
   );
+
+  const {
+    lastJsonMessage: gameData,
+    readyState,
+  }: { lastJsonMessage: GameData | null; readyState: ReadyState } =
+    useWebSocket(`${gameUrl}/player/${playerName}`);
 
   React.useEffect(() => {
     (async () => {
@@ -67,7 +104,7 @@ function LoggedInPage({
         return;
       }
       const data = await response.json();
-      setGameData(data as object);
+      setInitialGameData(data as object);
     })().catch((error: unknown) => {
       console.error(error);
     });
@@ -93,19 +130,21 @@ function LoggedInPage({
     });
   }, [playerName]);
 
-  if (gameData === null) {
-    return <p>Loading...</p>;
+  if (!gameData) {
+    return <p>Connecting...</p>;
   }
+
   return (
     <>
       <section className="section">
+        <PlayerList gameData={gameData} />
         <p>
           Socket status: <pre>{readyStateName(readyState)}</pre>
         </p>
-        <h3>WebSocket message</h3>
-        <pre>{JSON.stringify(lastJsonMessage, null, 2)}</pre>
-        <h3>Raw Data</h3>
+        <h3>Live Game Data</h3>
         <pre>{JSON.stringify(gameData, null, 2)}</pre>
+        <h3>Initial Game Data</h3>
+        <pre>{JSON.stringify(initialGameData, null, 2)}</pre>
       </section>
     </>
   );
