@@ -1,7 +1,8 @@
 import "./App.scss";
 import Nav from "./Nav";
 import { Routes, Route } from "react-router-dom";
-import NewGamePage from "./NewGamePage";
+import GamePage from "./GamePage";
+import GameListPage from "./GameListPage";
 
 export default function App() {
   return (
@@ -9,8 +10,8 @@ export default function App() {
       <Nav />
       <main>
         <Routes>
-          <Route path="/" element={<p>hi</p>} />
-          <Route path="/new" element={<NewGamePage />} />
+          <Route path="/" element={<GameListPage />} />
+          <Route path="/:gameId" element={<GamePage />} />
         </Routes>
       </main>
     </div>
