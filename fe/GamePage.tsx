@@ -56,8 +56,10 @@ function PlayerList({ gameData }: { gameData: GameData }) {
 }
 
 function LoggedOutPage({
+  gameId,
   setPlayerName,
 }: {
+  gameId: string;
   setPlayerName: (name: string) => void;
 }) {
   const [savedName, setSavedName] = useLocalStorage<string>("playerName");
@@ -65,8 +67,25 @@ function LoggedOutPage({
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const name = data.get("name") as string;
-    setSavedName(name);
-    setPlayerName(name);
+    (async () => {
+      const response = await fetch(`/api/game/${gameId}/player/${name}`, {
+        method: "POST",
+        body: "{}",
+      });
+      if (response.ok) {
+        toast("Joining as new player.");
+      } else if (response.status === 409) {
+        toast("Joining as existing player.");
+      } else {
+        toast("Failed to join game.");
+        console.error(response);
+        return;
+      }
+      setSavedName(name);
+      setPlayerName(name);
+    })().catch((error: unknown) => {
+      console.error(error);
+    });
   };
   return (
     <form className="form" onSubmit={onSubmit}>
@@ -120,26 +139,6 @@ function LoggedInPage({
     });
   }, []);
 
-  React.useEffect(() => {
-    (async () => {
-      const response = await fetch(`${gameUrl}/player/${playerName}`, {
-        method: "POST",
-        body: "{}",
-      });
-      if (response.ok) {
-        toast("Joining as new player.");
-      } else if (response.status === 409) {
-        toast("Joining as existing player.");
-      } else {
-        toast("Failed to join game.");
-        console.error(response);
-        return;
-      }
-    })().catch((error: unknown) => {
-      console.error(error);
-    });
-  }, [playerName]);
-
   if (!gameData) {
     return <p>Connecting...</p>;
   }
@@ -166,7 +165,7 @@ export default function GamePage() {
 
   const [playerName, setPlayerName] = React.useState<string | null>(null);
   if (playerName === null) {
-    return <LoggedOutPage setPlayerName={setPlayerName} />;
+    return <LoggedOutPage gameId={gameId} setPlayerName={setPlayerName} />;
   }
   return <LoggedInPage gameId={gameId} playerName={playerName} />;
 }
