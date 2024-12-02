@@ -49,7 +49,6 @@ export default function Nav() {
         <div className="navbar-start"></div>
         <div className="navbar-end">
           <NavLink href="/" label="Home" />
-          <NavLink href="/new" label="New Game" />
         </div>
       </div>
     </nav>
