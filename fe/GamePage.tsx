@@ -1,6 +1,8 @@
 import { useParams } from "react-router-dom";
 import React from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
+import { Field, Label, Control, SubmitButton } from "./Form";
+import { toast } from "react-toastify";
 
 function readyStateName(readyState: ReadyState) {
   switch (readyState) {
@@ -19,14 +21,43 @@ function readyStateName(readyState: ReadyState) {
   }
 }
 
-export default function GamePage() {
-  let { gameId } = useParams<{ gameId: string }>();
-  gameId ??= "unknown";
+function LoggedOutPage({
+  setPlayerName,
+}: {
+  setPlayerName: (name: string) => void;
+}) {
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    setPlayerName(data.get("name") as string);
+  };
+  return (
+    <form className="form" onSubmit={onSubmit}>
+      <Field>
+        <Label>Player name</Label>
+        <Control>
+          <input className="input" type="text" name="name" />
+        </Control>
+      </Field>
+      <SubmitButton>Join Game</SubmitButton>
+    </form>
+  );
+}
+
+function LoggedInPage({
+  gameId,
+  playerName,
+}: {
+  gameId: string;
+  playerName: string;
+}) {
   const gameUrl = `/api/game/${gameId}`;
 
   const [gameData, setGameData] = React.useState<object | null>(null);
 
-  const { lastJsonMessage, readyState } = useWebSocket(`${gameUrl}/player/A`);
+  const { lastJsonMessage, readyState } = useWebSocket(
+    `${gameUrl}/player/${playerName}`
+  );
 
   React.useEffect(() => {
     (async () => {
@@ -41,6 +72,26 @@ export default function GamePage() {
       console.error(error);
     });
   }, []);
+
+  React.useEffect(() => {
+    (async () => {
+      const response = await fetch(`${gameUrl}/player/${playerName}`, {
+        method: "POST",
+        body: "{}",
+      });
+      if (response.ok) {
+        toast("Joining as new player.");
+      } else if (response.status === 409) {
+        toast("Joining as existing player.");
+      } else {
+        toast("Failed to join game.");
+        console.error(response);
+        return;
+      }
+    })().catch((error: unknown) => {
+      console.error(error);
+    });
+  }, [playerName]);
 
   if (gameData === null) {
     return <p>Loading...</p>;
@@ -58,4 +109,15 @@ export default function GamePage() {
       </section>
     </>
   );
+}
+
+export default function GamePage() {
+  let { gameId } = useParams<{ gameId: string }>();
+  gameId ??= "unknown";
+
+  const [playerName, setPlayerName] = React.useState<string | null>(null);
+  if (playerName === null) {
+    return <LoggedOutPage setPlayerName={setPlayerName} />;
+  }
+  return <LoggedInPage gameId={gameId} playerName={playerName} />;
 }
