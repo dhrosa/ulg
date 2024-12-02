@@ -60,7 +60,7 @@ function LoggedOutPage({
 }: {
   setPlayerName: (name: string) => void;
 }) {
-  const [savedName, setSavedName, _] = useLocalStorage<string>("playerName");
+  const [savedName, setSavedName] = useLocalStorage<string>("playerName");
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -78,6 +78,7 @@ function LoggedOutPage({
             type="text"
             name="name"
             defaultValue={savedName || ""}
+            autoFocus
           />
         </Control>
       </Field>
