@@ -1,7 +1,8 @@
 import React from "react";
-import { Label, Field, Control, SubmitButton } from "./Form";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
-function NumberButtonChoices({
+/* function NumberButtonChoices({
   name,
   minValue,
   maxValue,
@@ -34,36 +35,35 @@ function NumberButtonChoices({
       ))}
     </Control>
   );
-}
+} */
 
 export default function NewGamePage() {
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    console.log(event);
-  };
-  return (
-    <>
-      <form className="form" onSubmit={onSubmit}>
-        <Field>
-          <Label>Number of players</Label>
-          <NumberButtonChoices
-            name="playerCount"
-            minValue={2}
-            maxValue={6}
-            defaultValue={2}
-          />
-        </Field>
-        <Field>
-          <Label>Player word length</Label>
-          <NumberButtonChoices
-            name="playerWordLength"
-            minValue={2}
-            maxValue={7}
-            defaultValue={5}
-          />
-        </Field>
-        <SubmitButton>Create</SubmitButton>
-      </form>
-    </>
-  );
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    (async () => {
+      const response = await fetch("/api/game", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          playerWordLength: 3,
+        }),
+      });
+      if (!response.ok) {
+        toast("Failed to create new game.", { type: "error" });
+        console.error(response);
+        return;
+      }
+      const data = await response.json();
+      const gameId: string = data.id;
+      toast(`Created new game: ${gameId}`);
+      navigate(`/${gameId}`);
+    })().catch((error: unknown) => {
+      console.error(error);
+    });
+  }, []);
+
+  return <p>Creating new game...</p>;
 }
