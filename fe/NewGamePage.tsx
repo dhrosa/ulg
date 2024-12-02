@@ -39,9 +39,14 @@ import { toast } from "react-toastify";
 
 export default function NewGamePage() {
   const navigate = useNavigate();
+  const done = React.useRef(false);
 
   React.useEffect(() => {
     (async () => {
+      if (done.current) {
+        return;
+      }
+      done.current = true;
       const response = await fetch("/api/game", {
         method: "POST",
         headers: {
