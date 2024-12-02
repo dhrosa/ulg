@@ -3,6 +3,7 @@ import React from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { Field, Label, Control, SubmitButton } from "./Form";
 import { toast } from "react-toastify";
+import { useLocalStorage } from "react-use";
 
 function readyStateName(readyState: ReadyState) {
   switch (readyState) {
@@ -59,17 +60,25 @@ function LoggedOutPage({
 }: {
   setPlayerName: (name: string) => void;
 }) {
+  const [savedName, setSavedName, _] = useLocalStorage<string>("playerName");
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    setPlayerName(data.get("name") as string);
+    const name = data.get("name") as string;
+    setSavedName(name);
+    setPlayerName(name);
   };
   return (
     <form className="form" onSubmit={onSubmit}>
       <Field>
         <Label>Player name</Label>
         <Control>
-          <input className="input" type="text" name="name" />
+          <input
+            className="input"
+            type="text"
+            name="name"
+            defaultValue={savedName || ""}
+          />
         </Control>
       </Field>
       <SubmitButton>Join Game</SubmitButton>
