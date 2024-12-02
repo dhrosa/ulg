@@ -2,24 +2,35 @@ import { useParams } from "react-router-dom";
 import React from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 
+function readyStateName(readyState: ReadyState) {
+  switch (readyState) {
+    case ReadyState.CONNECTING:
+      return "Connecting";
+    case ReadyState.OPEN:
+      return "Open";
+    case ReadyState.CLOSING:
+      return "Closing";
+    case ReadyState.CLOSED:
+      return "Closed";
+    case ReadyState.UNINSTANTIATED:
+      return "Uninstantiated";
+    default:
+      return "Unknown";
+  }
+}
+
 export default function GamePage() {
-  const { gameId } = useParams<{ gameId: string }>();
+  let { gameId } = useParams<{ gameId: string }>();
+  gameId ??= "unknown";
+  const gameUrl = `/api/game/${gameId}`;
+
   const [gameData, setGameData] = React.useState<object | null>(null);
 
-  const { lastJsonMessage, readyState } = useWebSocket(
-    `/api/game/${gameId ?? "unknown"}/player/A`
-  );
+  const { lastJsonMessage, readyState } = useWebSocket(`${gameUrl}/player/A`);
 
-  const connectionStatus = {
-    [ReadyState.CONNECTING]: "Connecting",
-    [ReadyState.OPEN]: "Open",
-    [ReadyState.CLOSING]: "Closing",
-    [ReadyState.CLOSED]: "Closed",
-    [ReadyState.UNINSTANTIATED]: "Uninstantiated",
-  }[readyState];
   React.useEffect(() => {
     (async () => {
-      const response = await fetch(`/api/game/${gameId ?? "unknown"}`);
+      const response = await fetch(gameUrl);
       if (!response.ok) {
         console.error(response);
         return;
@@ -30,16 +41,15 @@ export default function GamePage() {
       console.error(error);
     });
   }, []);
-  console.log("Message:", lastJsonMessage);
-  console.log("Connection status: ", connectionStatus);
+
   if (gameData === null) {
     return <p>Loading...</p>;
   }
   return (
     <>
-      <section className="section container">
+      <section className="section">
         <p>
-          Socket status: <pre>{connectionStatus}</pre>
+          Socket status: <pre>{readyStateName(readyState)}</pre>
         </p>
         <h3>WebSocket message</h3>
         <pre>{JSON.stringify(lastJsonMessage, null, 2)}</pre>
