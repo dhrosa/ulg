@@ -35,6 +35,7 @@ main {
 .game-page {
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 $card-width: 48px;

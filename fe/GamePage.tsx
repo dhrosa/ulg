@@ -4,6 +4,7 @@ import useWebSocket, { ReadyState } from "react-use-websocket";
 import { Field, Label, Control, SubmitButton } from "./Form";
 import { toast } from "react-toastify";
 import { useLocalStorage } from "react-use";
+import { Game, GameData } from "./Game";
 
 function readyStateName(readyState: ReadyState) {
   switch (readyState) {
@@ -20,15 +21,6 @@ function readyStateName(readyState: ReadyState) {
     default:
       return "Unknown";
   }
-}
-
-interface Player {
-  name: string;
-  connected: boolean;
-}
-
-interface GameData {
-  players: Player[];
 }
 
 function ConnectionTag({ connected }: { connected: boolean }) {
@@ -163,7 +155,35 @@ export default function GamePage() {
   let { gameId } = useParams<{ gameId: string }>();
   gameId ??= "unknown";
 
+  const [initialGame, setInitialGame] = React.useState<undefined | null | Game>(
+    undefined
+  );
   const [playerName, setPlayerName] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    (async () => {
+      const response = await fetch(`/api/game/${gameId}`);
+      if (response.status === 404) {
+        setInitialGame(null);
+        return;
+      }
+      if (!response.ok) {
+        console.error(response);
+        return;
+      }
+      const data = await response.json();
+      setInitialGame(new Game(data as GameData));
+    })().catch((error: unknown) => {
+      console.error(error);
+    });
+  }, []);
+  if (initialGame === undefined) {
+    return <p>Loading game...</p>;
+  }
+  if (initialGame === null) {
+    return <p>Game not found.</p>;
+  }
+
   if (playerName === null) {
     return <LoggedOutPage gameId={gameId} setPlayerName={setPlayerName} />;
   }
