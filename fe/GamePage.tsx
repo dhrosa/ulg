@@ -41,7 +41,7 @@ function ConnectionTag({ connected }: { connected: boolean }) {
 
 function PlayerList({ gameData }: { gameData: GameData }) {
   return (
-    <>
+    <div>
       <h3>Players</h3>
       <ul>
         {gameData.players.map((player) => (
@@ -51,7 +51,7 @@ function PlayerList({ gameData }: { gameData: GameData }) {
           </li>
         ))}
       </ul>
-    </>
+    </div>
   );
 }
 
@@ -144,18 +144,18 @@ function LoggedInPage({
   }
 
   return (
-    <>
-      <section className="section">
-        <PlayerList gameData={gameData} />
-        <p>
-          Socket status: <pre>{readyStateName(readyState)}</pre>
-        </p>
+    <div className="game-page container is-fluid">
+      <PlayerList gameData={gameData} />
+      <p>Socket status: {readyStateName(readyState)}</p>
+      <div>
         <h3>Live Game Data</h3>
         <pre>{JSON.stringify(gameData, null, 2)}</pre>
+      </div>
+      <div>
         <h3>Initial Game Data</h3>
         <pre>{JSON.stringify(initialGameData, null, 2)}</pre>
-      </section>
-    </>
+      </div>
+    </div>
   );
 }
 

@@ -32,6 +32,11 @@ main {
   height: 100%;
 }
 
+.game-page {
+  display: flex;
+  flex-wrap: wrap;
+}
+
 $card-width: 48px;
 $card-height: $card-width * 3.5 / 2.1;
 $card-font-size: 32px;
