@@ -107,9 +107,7 @@ class Game:
                 continue
             try:
                 await player.socket.send_json(
-                    jsonable_encoder(
-                        self.data, exclude_none=True, exclude_defaults=True
-                    )
+                    jsonable_encoder(self.data, exclude_none=True)
                 )
             except WebSocketDisconnect:
                 logger.info("Skipping player %s due to disconnection", player.name)

@@ -110,6 +110,29 @@ function LoggedOutPage({
   );
 }
 
+function GameInfo({ connectionStatus }: { connectionStatus: string }) {
+  const game = React.useContext(GameContext);
+  const items = {
+    "Game ID": game.id,
+    "Connection Status": connectionStatus,
+    Phase: game.phase.name,
+    Players: game.players.length,
+    NPCs: 6 - game.players.length,
+  };
+  return (
+    <nav className="level">
+      {Object.entries(items).map(([label, value]) => (
+        <div key={label} className="level-item has-text-centered">
+          <div>
+            <p className="heading">{label}</p>
+            <p className="title">{value}</p>
+          </div>
+        </div>
+      ))}
+    </nav>
+  );
+}
+
 function LoggedInPage() {
   const initialGame = React.useContext(GameContext);
   const playerName = React.useContext(PlayerNameContext);
@@ -127,8 +150,8 @@ function LoggedInPage() {
   return (
     <GameContext.Provider value={game}>
       <div className="game-page container is-fluid">
+        <GameInfo connectionStatus={readyStateName(readyState)} />
         <Players />
-        <p>Socket status: {readyStateName(readyState)}</p>
         <div>
           <h3>Live Game Data</h3>
           <pre>{JSON.stringify(game, null, 2)}</pre>

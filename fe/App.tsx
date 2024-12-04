@@ -9,7 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 export default function App() {
   return (
-    <div className="container is-fluid">
+    <div className="container">
       <Nav />
       <ToastContainer />
       <main>
