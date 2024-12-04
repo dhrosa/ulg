@@ -9,35 +9,28 @@ import { Game, GameData, GameContext, Player, PlayerNameContext } from "./Game";
 function readyStateName(readyState: ReadyState) {
   switch (readyState) {
     case ReadyState.CONNECTING:
-      return "Connecting";
+      return "connecting";
     case ReadyState.OPEN:
-      return "Open";
+      return "open";
     case ReadyState.CLOSING:
-      return "Closing";
+      return "closing";
     case ReadyState.CLOSED:
-      return "Closed";
+      return "closed";
     case ReadyState.UNINSTANTIATED:
-      return "Uninstantiated";
+      return "uninstantiated";
     default:
-      return "Unknown";
+      return "unknown";
   }
-}
-
-function ConnectionTag({ connected }: { connected: boolean }) {
-  return (
-    <span className={`tag ${connected ? "is-success" : "is-danger"}`}>
-      {connected ? "online" : "offline"}
-    </span>
-  );
 }
 
 function PlayerElement({ player }: { player: Player }) {
   return (
-    <div className="player box has-text-centered">
-      <div>{player.name}</div>
-      <ConnectionTag connected={player.connected} />
-      <div className="letter container has-background-dark has-text-light">
-        ?
+    <div className="player card">
+      <header className="card-header">
+        <div className="card-header-title">{player.name}</div>
+      </header>
+      <div className="card-content">
+        <div className="letter">?</div>
       </div>
     </div>
   );

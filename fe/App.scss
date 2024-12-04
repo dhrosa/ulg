@@ -46,8 +46,15 @@ main {
 
     width: fit-content;
 
+    .card-header-title {
+      justify-content: center;
+    }
+
     .letter {
-      font-family: $family-code;
+      @extend .is-family-monospace,
+        .has-text-centered,
+        .has-background-dark,
+        .has-text-light;
       width: fit-content;
       padding: 1em;
       border-radius: 0.5em;
