@@ -32,6 +32,30 @@ main {
   height: 100%;
 }
 
+.players {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  align-items: center;
+
+  .player {
+    &:not(:last-child) {
+      margin-bottom: revert;
+    }
+
+    width: fit-content;
+
+    .letter {
+      font-family: $family-code;
+      width: fit-content;
+      padding: 1em;
+      border-radius: 0.5em;
+    }
+  }
+}
+
+/* 
 $card-width: 48px;
 $card-height: $card-width * 3.5 / 2.1;
 $card-font-size: 32px;
@@ -64,3 +88,4 @@ $card-font-size: 32px;
 
   margin-top: $card-height;
 }
+ */

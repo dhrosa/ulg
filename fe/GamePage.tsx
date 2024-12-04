@@ -4,7 +4,7 @@ import useWebSocket, { ReadyState } from "react-use-websocket";
 import { Field, Label, Control, SubmitButton } from "./Form";
 import { toast } from "react-toastify";
 import { useLocalStorage } from "react-use";
-import { Game, GameData, GameContext, PlayerNameContext } from "./Game";
+import { Game, GameData, GameContext, Player, PlayerNameContext } from "./Game";
 
 function readyStateName(readyState: ReadyState) {
   switch (readyState) {
@@ -26,25 +26,31 @@ function readyStateName(readyState: ReadyState) {
 function ConnectionTag({ connected }: { connected: boolean }) {
   return (
     <span className={`tag ${connected ? "is-success" : "is-danger"}`}>
-      {connected ? "Connected" : "Disconnected"}
+      {connected ? "online" : "offline"}
     </span>
+  );
+}
+
+function PlayerElement({ player }: { player: Player }) {
+  return (
+    <div className="player box has-text-centered">
+      <div>{player.name}</div>
+      <ConnectionTag connected={player.connected} />
+      <div className="letter container has-background-dark has-text-light">
+        ?
+      </div>
+    </div>
   );
 }
 
 function Players() {
   const game = React.useContext(GameContext);
   return (
-    <div>
-      <h3>Players</h3>
-      <ul>
-        {game.players.map((player) => (
-          <li key={player.name}>
-            <span>{player.name}</span>
-            <ConnectionTag connected={player.connected} />
-          </li>
-        ))}
-      </ul>
-    </div>
+    <section className="section players">
+      {game.players.map((player) => (
+        <PlayerElement key={player.name} player={player} />
+      ))}
+    </section>
   );
 }
 
