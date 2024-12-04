@@ -4,6 +4,7 @@ import useWebSocket, { ReadyState } from "react-use-websocket";
 import { Field, Label, Control, SubmitButton } from "./Form";
 import { toast } from "react-toastify";
 import { useLocalStorage } from "react-use";
+import Symbol from "./Symbol";
 import { Game, GameData, GameContext, Player, PlayerNameContext } from "./Game";
 
 function readyStateName(readyState: ReadyState) {
@@ -23,6 +24,13 @@ function readyStateName(readyState: ReadyState) {
   }
 }
 
+function Tag({
+  className,
+  ...rest
+}: { className?: string } & React.ComponentProps<"div">) {
+  return <div className={`tag ${className || ""}`} {...rest} />;
+}
+
 function PlayerElement({ player }: { player: Player }) {
   return (
     <div className="player card">
@@ -30,6 +38,20 @@ function PlayerElement({ player }: { player: Player }) {
         <div className="card-header-title">{player.name}</div>
       </header>
       <div className="card-content">
+        <div className="tags">
+          <Tag>
+            <Symbol name="person" />
+          </Tag>
+          {player.connected ? (
+            <Tag className="is-success">
+              <Symbol name="wifi" />
+            </Tag>
+          ) : (
+            <Tag className="is-warning">
+              <Symbol name="wifi_off" />
+            </Tag>
+          )}
+        </div>
         <div className="letter">?</div>
       </div>
     </div>
