@@ -42,12 +42,17 @@ export function Label({ children }: { children: ReactNode }) {
 export function SubmitButton({
   children = "Submit",
   className,
+  ...rest
 }: {
   children: ReactNode;
   className?: string;
-}) {
+} & React.ComponentPropsWithRef<"button">) {
   return (
-    <button type="submit" className={"button is-primary " + (className ?? "")}>
+    <button
+      type="submit"
+      className={"button is-primary " + (className ?? "")}
+      {...rest}
+    >
       {children}
     </button>
   );

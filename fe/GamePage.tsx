@@ -158,6 +158,14 @@ function LoggedInPage() {
       <div className="game-page container is-fluid">
         <GameInfo connectionStatus={readyStateName(readyState)} />
         <Players />
+        {game.phase.name == "lobby" && (
+          <SubmitButton
+            className="is-fullwidth is-large"
+            disabled={game.players.length < 2}
+          >
+            Start Game
+          </SubmitButton>
+        )}
         <div>
           <h3>Live Game Data</h3>
           <pre>{JSON.stringify(game, null, 2)}</pre>
