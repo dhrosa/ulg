@@ -4,7 +4,7 @@ import useWebSocket, { ReadyState } from "react-use-websocket";
 import { Field, Label, Control, SubmitButton } from "./Form";
 import { toast } from "react-toastify";
 import { useLocalStorage } from "react-use";
-import { Game, GameData } from "./Game";
+import { Game, GameData, GameContext, PlayerNameContext } from "./Game";
 
 function readyStateName(readyState: ReadyState) {
   switch (readyState) {
@@ -31,12 +31,13 @@ function ConnectionTag({ connected }: { connected: boolean }) {
   );
 }
 
-function PlayerList({ gameData }: { gameData: GameData }) {
+function Players() {
+  const game = React.useContext(GameContext);
   return (
     <div>
       <h3>Players</h3>
       <ul>
-        {gameData.players.map((player) => (
+        {game.players.map((player) => (
           <li key={player.name}>
             <span>{player.name}</span>
             <ConnectionTag connected={player.connected} />
@@ -47,20 +48,31 @@ function PlayerList({ gameData }: { gameData: GameData }) {
   );
 }
 
+function LoadedPage() {
+  const [playerName, setPlayerName] = React.useState<string | null>();
+  if (!playerName) {
+    return <LoggedOutPage setPlayerName={setPlayerName} />;
+  }
+  return (
+    <PlayerNameContext.Provider value={playerName}>
+      <LoggedInPage />
+    </PlayerNameContext.Provider>
+  );
+}
+
 function LoggedOutPage({
-  gameId,
   setPlayerName,
 }: {
-  gameId: string;
   setPlayerName: (name: string) => void;
 }) {
+  const game = React.useContext(GameContext);
   const [savedName, setSavedName] = useLocalStorage<string>("playerName");
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const name = data.get("name") as string;
     (async () => {
-      const response = await fetch(`/api/game/${gameId}/player/${name}`, {
+      const response = await fetch(game.playerUrl(name), {
         method: "POST",
         body: "{}",
       });
@@ -98,56 +110,35 @@ function LoggedOutPage({
   );
 }
 
-function LoggedInPage({
-  gameId,
-  playerName,
-}: {
-  gameId: string;
-  playerName: string;
-}) {
-  const gameUrl = `/api/game/${gameId}`;
-
-  const [initialGameData, setInitialGameData] = React.useState<object | null>(
-    null
-  );
-
+function LoggedInPage() {
+  const initialGame = React.useContext(GameContext);
+  const playerName = React.useContext(PlayerNameContext);
   const {
     lastJsonMessage: gameData,
     readyState,
   }: { lastJsonMessage: GameData | null; readyState: ReadyState } =
-    useWebSocket(`${gameUrl}/player/${playerName}`);
-
-  React.useEffect(() => {
-    (async () => {
-      const response = await fetch(gameUrl);
-      if (!response.ok) {
-        console.error(response);
-        return;
-      }
-      const data = await response.json();
-      setInitialGameData(data as object);
-    })().catch((error: unknown) => {
-      console.error(error);
-    });
-  }, []);
+    useWebSocket(initialGame.playerUrl(playerName));
 
   if (!gameData) {
     return <p>Connecting...</p>;
   }
+  const game = new Game(gameData);
 
   return (
-    <div className="game-page container is-fluid">
-      <PlayerList gameData={gameData} />
-      <p>Socket status: {readyStateName(readyState)}</p>
-      <div>
-        <h3>Live Game Data</h3>
-        <pre>{JSON.stringify(gameData, null, 2)}</pre>
+    <GameContext.Provider value={game}>
+      <div className="game-page container is-fluid">
+        <Players />
+        <p>Socket status: {readyStateName(readyState)}</p>
+        <div>
+          <h3>Live Game Data</h3>
+          <pre>{JSON.stringify(game, null, 2)}</pre>
+        </div>
+        <div>
+          <h3>Initial Game Data</h3>
+          <pre>{JSON.stringify(initialGame, null, 2)}</pre>
+        </div>
       </div>
-      <div>
-        <h3>Initial Game Data</h3>
-        <pre>{JSON.stringify(initialGameData, null, 2)}</pre>
-      </div>
-    </div>
+    </GameContext.Provider>
   );
 }
 
@@ -155,16 +146,13 @@ export default function GamePage() {
   let { gameId } = useParams<{ gameId: string }>();
   gameId ??= "unknown";
 
-  const [initialGame, setInitialGame] = React.useState<undefined | null | Game>(
-    undefined
-  );
-  const [playerName, setPlayerName] = React.useState<string | null>(null);
+  const [game, setGame] = React.useState<undefined | null | Game>(undefined);
 
   React.useEffect(() => {
     (async () => {
       const response = await fetch(`/api/game/${gameId}`);
       if (response.status === 404) {
-        setInitialGame(null);
+        setGame(null);
         return;
       }
       if (!response.ok) {
@@ -172,20 +160,20 @@ export default function GamePage() {
         return;
       }
       const data = await response.json();
-      setInitialGame(new Game(data as GameData));
+      setGame(new Game(data as GameData));
     })().catch((error: unknown) => {
       console.error(error);
     });
   }, []);
-  if (initialGame === undefined) {
+  if (game === undefined) {
     return <p>Loading game...</p>;
   }
-  if (initialGame === null) {
+  if (game === null) {
     return <p>Game not found.</p>;
   }
-
-  if (playerName === null) {
-    return <LoggedOutPage gameId={gameId} setPlayerName={setPlayerName} />;
-  }
-  return <LoggedInPage gameId={gameId} playerName={playerName} />;
+  return (
+    <GameContext.Provider value={game}>
+      <LoadedPage />
+    </GameContext.Provider>
+  );
 }

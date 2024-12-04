@@ -22,6 +22,11 @@ export class Game implements GameData {
   get url(): string {
     return `/api/game/${this.id}`;
   }
+
+  playerUrl(name: string): string {
+    return `${this.url}/player/${name}`;
+  }
 }
 
 export const GameContext = createContext<Game>({} as Game);
+export const PlayerNameContext = createContext<string>("");
