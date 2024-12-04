@@ -139,6 +139,48 @@ function GameInfo({ connectionStatus }: { connectionStatus: string }) {
   );
 }
 
+interface ApiError {
+  detail: string;
+}
+
+function StartGameButton() {
+  const game = React.useContext(GameContext);
+  if (game.phase.name != "lobby") {
+    return false;
+  }
+  const onClick = async () => {
+    const response = await fetch(`${game.url}/start`, { method: "POST" });
+    if (response.ok) {
+      toast.success("Game started!");
+      return;
+    }
+    const error = (await response.json()) as ApiError;
+    if (response.status === 409) {
+      toast.error(`Could not start game: ${error.detail}`);
+      return;
+    }
+  };
+  return (
+    <SubmitButton
+      className="is-fullwidth is-large"
+      disabled={game.players.length < 2}
+      onClick={onClick}
+    >
+      Start Game
+    </SubmitButton>
+  );
+}
+
+function DebugInfo() {
+  const game = React.useContext(GameContext);
+  return (
+    <section className="section">
+      <h3>Live Game Data</h3>
+      <pre>{JSON.stringify(game, null, 2)}</pre>
+    </section>
+  );
+}
+
 function LoggedInPage() {
   const initialGame = React.useContext(GameContext);
   const playerName = React.useContext(PlayerNameContext);
@@ -158,22 +200,8 @@ function LoggedInPage() {
       <div className="game-page container is-fluid">
         <GameInfo connectionStatus={readyStateName(readyState)} />
         <Players />
-        {game.phase.name == "lobby" && (
-          <SubmitButton
-            className="is-fullwidth is-large"
-            disabled={game.players.length < 2}
-          >
-            Start Game
-          </SubmitButton>
-        )}
-        <div>
-          <h3>Live Game Data</h3>
-          <pre>{JSON.stringify(game, null, 2)}</pre>
-        </div>
-        <div>
-          <h3>Initial Game Data</h3>
-          <pre>{JSON.stringify(initialGame, null, 2)}</pre>
-        </div>
+        <StartGameButton />
+        <DebugInfo />
       </div>
     </GameContext.Provider>
   );

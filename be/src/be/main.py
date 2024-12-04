@@ -236,7 +236,9 @@ async def game_start(game_id: str) -> None:
     game = game_or_404(game_id)
     for player in game.players.values():
         if player.socket is None:
-            raise HTTPException(status_code=409, detail="Player {player.name}")
+            raise HTTPException(
+                status_code=409, detail=f"Player {player.name} is not connected"
+            )
 
     game.phase = VotePhase()
     await game.broadcast()
