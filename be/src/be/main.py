@@ -5,6 +5,7 @@ from typing import AsyncIterator, Literal, TypeAlias
 
 import coolname
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.encoders import jsonable_encoder
 from fastapi_camelcase import CamelModel
 from pydantic import Field
 from rich.logging import RichHandler
@@ -105,7 +106,7 @@ class Game:
             if player.socket is None:
                 continue
             try:
-                await player.socket.send_json(self.data.model_dump())
+                await player.socket.send_json(jsonable_encoder(self.data))
             except WebSocketDisconnect:
                 logger.info("Skipping player %s due to disconnection", player.name)
 
