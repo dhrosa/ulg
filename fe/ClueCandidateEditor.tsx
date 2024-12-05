@@ -2,6 +2,36 @@ import React from "react";
 import { GameContext } from "./Game";
 import { Field, Label, Control, Input } from "./Form";
 
+function ButtonChoices({
+  name,
+  values,
+  defaultValue,
+}: {
+  name: string;
+  values: string[];
+  defaultValue: string;
+}) {
+  const [value, setValue] = React.useState(defaultValue);
+
+  return (
+    <div className="button-choices">
+      <input type="hidden" name={name} value={value} />
+      {values.map((v) => (
+        <button
+          key={v}
+          className={`button ${v === value ? "is-primary" : ""}`}
+          type="button"
+          onClick={() => {
+            setValue(v);
+          }}
+        >
+          {v}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function NumberButtonChoices({
   name,
   minValue,
@@ -13,27 +43,16 @@ function NumberButtonChoices({
   maxValue: number;
   defaultValue: number;
 }) {
-  const [value, setValue] = React.useState(defaultValue);
-  const choices = Array.from(
-    { length: maxValue - minValue + 1 },
-    (_, i) => i + minValue
+  const values = Array.from({ length: maxValue - minValue + 1 }, (_, i) =>
+    (i + minValue).toString()
   );
+
   return (
-    <div className="number-buttons">
-      <input type="hidden" name={name} value={value} />
-      {choices.map((c) => (
-        <button
-          key={c}
-          className={`button ${c === value ? "is-primary" : ""}`}
-          type="button"
-          onClick={() => {
-            setValue(c);
-          }}
-        >
-          {c}
-        </button>
-      ))}
-    </div>
+    <ButtonChoices
+      name={name}
+      values={values}
+      defaultValue={defaultValue.toString()}
+    />
   );
 }
 
@@ -46,7 +65,7 @@ export default function ClueCandidateEditor() {
 
   return (
     <section className="section">
-      <nav className="panel">
+      <nav className="panel clue-candidate-editor">
         <p className="panel-heading">Clue Candidate</p>
         <div className="panel-block">
           <form className="form">
@@ -82,11 +101,13 @@ export default function ClueCandidateEditor() {
             </Field>
 
             <Field>
+              <Label>Wild</Label>
               <Control>
-                <label className="checkbox">
-                  <input type="checkbox" />
-                  Wild
-                </label>
+                <ButtonChoices
+                  name="wild"
+                  defaultValue="No"
+                  values={["Yes", "No"]}
+                />
               </Control>
             </Field>
           </form>

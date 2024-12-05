@@ -73,37 +73,19 @@ main {
   }
 }
 
-/* 
-$card-width: 48px;
-$card-height: $card-width * 3.5 / 2.1;
-$card-font-size: 32px;
-.letter-card {
-  @extend .card;
-  font-size: $card-font-size;
-
-  width: $card-width;
-
-  .text {
-    width: 100%;
-    height: $card-height;
-
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-content: center;
-  }
-
-  .label {
-    width: 100%;
-  }
-}
-
-.letter-card-row {
-  width: 100%;
+.button-choices {
   display: flex;
-  flex-direction: row;
   justify-content: space-evenly;
-
-  margin-top: $card-height;
 }
- */
+
+.clue-candidate-editor {
+  form {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+
+    label {
+      @extend .has-text-centered;
+    }
+  }
+}
