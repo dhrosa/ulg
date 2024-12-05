@@ -5,6 +5,10 @@ export interface Player {
   connected: boolean;
 }
 
+export interface Npc {
+  name: string;
+}
+
 interface LobbyPhase {
   name: "lobby";
 }
@@ -22,17 +26,20 @@ type Phase = LobbyPhase | VotePhase | CluePhase;
 export interface GameData {
   id: string;
   players: Player[];
+  npcs: Npc[];
   phase: Phase;
 }
 
 export class Game implements GameData {
   id: string;
   players: Player[];
+  npcs: Npc[];
   phase: Phase;
 
   constructor(data: GameData) {
     this.id = data.id;
     this.players = data.players;
+    this.npcs = data.npcs;
     this.phase = data.phase;
   }
 

@@ -5,7 +5,14 @@ import { Field, Label, Control, SubmitButton } from "./Form";
 import { toast } from "react-toastify";
 import { useLocalStorage } from "react-use";
 import Symbol from "./Symbol";
-import { Game, GameData, GameContext, Player, PlayerNameContext } from "./Game";
+import {
+  Game,
+  GameData,
+  GameContext,
+  Player,
+  Npc,
+  PlayerNameContext,
+} from "./Game";
 
 function readyStateName(readyState: ReadyState) {
   switch (readyState) {
@@ -39,9 +46,6 @@ function PlayerElement({ player }: { player: Player }) {
       </header>
       <div className="card-content">
         <div className="tags">
-          <Tag>
-            <Symbol name="person" />
-          </Tag>
           {player.connected ? (
             <Tag className="is-success">
               <Symbol name="wifi" />
@@ -60,12 +64,35 @@ function PlayerElement({ player }: { player: Player }) {
   );
 }
 
+function NpcElement({ npc }: { npc: Npc }) {
+  return (
+    <div className="player card">
+      <header className="card-header">
+        <div className="card-header-title">{npc.name}</div>
+      </header>
+      <div className="card-content">
+        <div className="tags">
+          <Tag>
+            <Symbol name="smart_toy" />
+          </Tag>
+        </div>
+        <div className="letter">
+          <div>?</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Players() {
   const game = React.useContext(GameContext);
   return (
     <section className="section players">
       {game.players.map((player) => (
         <PlayerElement key={player.name} player={player} />
+      ))}
+      {game.npcs.map((npc) => (
+        <NpcElement key={npc.name} npc={npc} />
       ))}
     </section>
   );

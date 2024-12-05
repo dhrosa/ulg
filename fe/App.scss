@@ -50,6 +50,12 @@ main {
       justify-content: center;
     }
 
+    .card-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
     .letter {
       display: flex;
       justify-content: center;

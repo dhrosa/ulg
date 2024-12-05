@@ -44,6 +44,10 @@ class PlayerData(CamelModel):
     vote: str = ""
 
 
+class Npc(CamelModel):
+    name: str
+
+
 class Player:
     def __init__(self, name: str) -> None:
         self.name = name
@@ -81,6 +85,7 @@ class GameData(CamelModel):
     id: str
     settings: GameSettings
     players: list[PlayerData] = []
+    npcs: list[Npc] = []
     phase: Phase = Field(discriminator="name")
 
 
@@ -89,6 +94,7 @@ class Game:
         self.id = coolname.generate_slug(2)
         self.settings = settings
         self.players = dict[str, Player]()
+        self.npcs = list[Npc]()
         self.phase: Phase = LobbyPhase()
 
     @property
@@ -97,6 +103,7 @@ class Game:
             id=self.id,
             settings=self.settings,
             players=[player.data for player in self.players.values()],
+            npcs=self.npcs,
             phase=self.phase,
         )
 
@@ -119,6 +126,12 @@ class Game:
         if count >= quorum:
             return top_vote
         return ""
+
+    def start(self) -> None:
+        # Fill remaining slots with NPCs
+        for n in range(6 - len(self.players)):
+            self.npcs.append(Npc(name=f"NPC {n + 1}"))
+        self.phase = VotePhase()
 
 
 app = FastAPI(root_url="/api", lifespan=lifespan)
@@ -240,5 +253,5 @@ async def game_start(game_id: str) -> None:
                 status_code=409, detail=f"Player {player.name} is not connected"
             )
 
-    game.phase = VotePhase()
+    game.start()
     await game.broadcast()
