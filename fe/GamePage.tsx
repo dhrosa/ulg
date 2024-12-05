@@ -13,6 +13,7 @@ import {
   Npc,
   PlayerNameContext,
 } from "./Game";
+import ClueCandidateEditor from "./ClueCandidateEditor";
 
 function readyStateName(readyState: ReadyState) {
   switch (readyState) {
@@ -245,6 +246,7 @@ function LoggedInPage() {
         <GameInfo connectionStatus={readyStateName(readyState)} />
         <Players />
         <StartGameButton />
+        <ClueCandidateEditor />
         <DebugInfo />
       </div>
     </GameContext.Provider>

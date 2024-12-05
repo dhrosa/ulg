@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 
 export function ErrorList({ errors }: { errors?: string[] }) {
   if (!errors) {
@@ -16,23 +16,21 @@ export function ErrorList({ errors }: { errors?: string[] }) {
 }
 
 export function Field({
-  children,
   className,
+  ...rest
 }: {
-  children: ReactNode;
   className?: string;
-}) {
-  return <div className={"field " + (className ?? "")}>{children}</div>;
+} & React.ComponentProps<"div">) {
+  return <div className={"field " + (className ?? "")} {...rest} />;
 }
 
 export function Control({
-  children,
   className,
+  ...rest
 }: {
-  children: ReactNode;
   className?: string;
-}) {
-  return <div className={"control " + (className ?? "")}>{children}</div>;
+} & React.ComponentProps<"div">) {
+  return <div className={"control " + (className ?? "")} {...rest} />;
 }
 
 export function Label({ children }: { children: ReactNode }) {
@@ -58,7 +56,10 @@ export function SubmitButton({
   );
 }
 
-export function Input({ type, ...rest }: { type?: string }) {
+export function Input({
+  type,
+  ...rest
+}: { type?: string } & React.ComponentProps<"input">) {
   return <input className="input" type={type ?? "text"} {...rest} />;
 }
 

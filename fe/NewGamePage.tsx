@@ -2,41 +2,6 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-/* function NumberButtonChoices({
-  name,
-  minValue,
-  maxValue,
-  defaultValue,
-}: {
-  name: string;
-  minValue: number;
-  maxValue: number;
-  defaultValue: number;
-}) {
-  const [value, setValue] = React.useState(defaultValue);
-  const choices = Array.from(
-    { length: maxValue - minValue + 1 },
-    (_, i) => i + minValue
-  );
-  return (
-    <Control>
-      <input type="hidden" name={name} value={value} />
-      {choices.map((c) => (
-        <button
-          key={c}
-          className={`button ${c === value ? "is-primary" : ""}`}
-          type="button"
-          onClick={() => {
-            setValue(c);
-          }}
-        >
-          {c}
-        </button>
-      ))}
-    </Control>
-  );
-} */
-
 export default function NewGamePage() {
   const navigate = useNavigate();
   const done = React.useRef(false);
