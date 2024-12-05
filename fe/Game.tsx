@@ -3,10 +3,13 @@ import { createContext } from "react";
 export interface Player {
   name: string;
   connected: boolean;
+  letter: string;
 }
 
 export interface Npc {
   name: string;
+  letter: string;
+  deckSize: number;
 }
 
 interface LobbyPhase {

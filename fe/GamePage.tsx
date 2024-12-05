@@ -57,7 +57,7 @@ function PlayerElement({ player }: { player: Player }) {
           )}
         </div>
         <div className="letter">
-          <div>?</div>
+          <div>{player.letter}</div>
         </div>
       </div>
     </div>
@@ -77,7 +77,7 @@ function NpcElement({ npc }: { npc: Npc }) {
           </Tag>
         </div>
         <div className="letter">
-          <div>?</div>
+          <div>{npc.letter}</div>
         </div>
       </div>
     </div>

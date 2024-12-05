@@ -1,6 +1,7 @@
 import logging
 from collections import Counter
 from contextlib import asynccontextmanager
+from random import shuffle
 from typing import AsyncIterator, Literal, TypeAlias
 
 import coolname
@@ -42,10 +43,28 @@ class PlayerData(CamelModel):
     connected: bool = False
     clue_candidate: ClueCandidate | None = None
     vote: str = ""
+    letter: str = "?"
 
 
-class Npc(CamelModel):
+class NpcData(CamelModel):
     name: str
+    letter: str
+    deck_size: int
+
+
+class Npc:
+    def __init__(self, name: str, letter: str, deck_size: int) -> None:
+        self.name = name
+        self.letter = letter
+        self.deck_size = deck_size
+
+    @property
+    def data(self) -> NpcData:
+        return NpcData(
+            name=self.name,
+            letter=self.letter,
+            deck_size=self.deck_size,
+        )
 
 
 class Player:
@@ -53,6 +72,7 @@ class Player:
         self.name = name
         self.socket: WebSocket | None = None
         self.clue_candidate: ClueCandidate | None = None
+        self.letter = "?"
         self.vote = ""
 
     @property
@@ -62,6 +82,7 @@ class Player:
             connected=self.socket is not None,
             clue_candidate=self.clue_candidate,
             vote=self.vote,
+            letter=self.letter,
         )
 
 
@@ -85,7 +106,7 @@ class GameData(CamelModel):
     id: str
     settings: GameSettings
     players: list[PlayerData] = []
-    npcs: list[Npc] = []
+    npcs: list[NpcData] = []
     phase: Phase = Field(discriminator="name")
 
 
@@ -97,13 +118,16 @@ class Game:
         self.npcs = list[Npc]()
         self.phase: Phase = LobbyPhase()
 
+        self.deck = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        shuffle(self.deck)
+
     @property
     def data(self) -> GameData:
         return GameData(
             id=self.id,
             settings=self.settings,
             players=[player.data for player in self.players.values()],
-            npcs=self.npcs,
+            npcs=[npc.data for npc in self.npcs],
             phase=self.phase,
         )
 
@@ -130,7 +154,11 @@ class Game:
     def start(self) -> None:
         # Fill remaining slots with NPCs
         for n in range(6 - len(self.players)):
-            self.npcs.append(Npc(name=f"NPC {n + 1}"))
+            self.npcs.append(
+                Npc(name=f"NPC {n + 1}", letter=self.deck.pop(), deck_size=5)
+            )
+        for player in self.players.values():
+            player.letter = self.deck.pop()
         self.phase = VotePhase()
 
 
