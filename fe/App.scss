@@ -51,13 +51,18 @@ main {
     }
 
     .letter {
-      @extend .is-family-monospace,
-        .has-text-centered,
-        .has-background-dark,
-        .has-text-light;
-      width: fit-content;
-      padding: 1em;
-      border-radius: 0.5em;
+      display: flex;
+      justify-content: center;
+
+      div {
+        @extend .is-family-monospace,
+          .has-text-centered,
+          .has-background-dark,
+          .has-text-light;
+        width: fit-content;
+        padding: 1em;
+        border-radius: 0.5em;
+      }
     }
   }
 }

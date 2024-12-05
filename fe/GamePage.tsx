@@ -52,7 +52,9 @@ function PlayerElement({ player }: { player: Player }) {
             </Tag>
           )}
         </div>
-        <div className="letter">?</div>
+        <div className="letter">
+          <div>?</div>
+        </div>
       </div>
     </div>
   );
