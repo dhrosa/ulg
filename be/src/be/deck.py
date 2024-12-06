@@ -56,7 +56,7 @@ def deal_words(
         raise NoPossibleCombinationError("Could not find a valid combination of words.")
 
     # Remove the used letters from the deck. O(n^2), but at this scale it's okay.
-    to_pop = [letter * count for letter, count in required_letters.items()]
+    to_pop = list("".join(letter * count for letter, count in required_letters.items()))
     while to_pop:
         deck.remove(to_pop.pop())
     return list(words)

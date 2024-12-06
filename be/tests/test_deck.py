@@ -25,3 +25,9 @@ def test_deal_words_impossible_combination() -> None:
 
     with raises(NoPossibleCombinationError):
         deal_words(deck, corpus, num_words=2, word_length=3)
+
+
+def test_deal_words_duplicate_letters() -> None:
+    deck = list("XXX")
+    corpus = {"XX"}
+    assert deal_words(deck, corpus, num_words=1, word_length=2) == ["XX"]
