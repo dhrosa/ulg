@@ -2,7 +2,7 @@ import re
 from functools import cache
 from pathlib import Path
 
-# Word list sourced from https://www.freescrabbledictionary.com/english-word-list/download/english.txt
+# Word list from https://www.freescrabbledictionary.com/english-word-list/download/english.txt
 
 
 @cache
