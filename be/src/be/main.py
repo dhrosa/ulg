@@ -1,7 +1,6 @@
 import logging
 from collections import Counter
 from contextlib import asynccontextmanager
-from random import shuffle
 from typing import AsyncIterator, Literal, TypeAlias
 
 import coolname
@@ -10,6 +9,8 @@ from fastapi.encoders import jsonable_encoder
 from fastapi_camelcase import CamelModel
 from pydantic import Field
 from rich.logging import RichHandler
+
+from .deck import new_deck
 
 logger = logging.getLogger(__name__)
 
@@ -117,9 +118,7 @@ class Game:
         self.players = dict[str, Player]()
         self.npcs = list[Npc]()
         self.phase: Phase = LobbyPhase()
-
-        self.deck = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-        shuffle(self.deck)
+        self.deck = new_deck()
 
     @property
     def data(self) -> GameData:
