@@ -16,6 +16,7 @@ export interface Player {
   connected: boolean;
   letter: string;
   deckSize: number;
+  clueCandidate?: ClueCandidate;
 }
 
 export interface Npc {

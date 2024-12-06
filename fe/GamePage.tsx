@@ -12,6 +12,7 @@ import {
   Player,
   Npc,
   PlayerNameContext,
+  ClueCandidate,
 } from "./Game";
 import ClueCandidateEditor from "./ClueCandidateEditor";
 
@@ -39,6 +40,26 @@ function Tag({
   return <div className={`tag ${className || ""}`} {...rest} />;
 }
 
+function ClueCandidateElement({
+  clueCandidate,
+}: {
+  clueCandidate?: ClueCandidate;
+}) {
+  if (!clueCandidate) {
+    return false;
+  }
+  return (
+    <div className="clue-candidate">
+      <span>{clueCandidate.length}</span>
+      {clueCandidate.playerCount > 0 && (
+        <span>-{clueCandidate.playerCount}P</span>
+      )}
+      {clueCandidate.npcCount > 0 && <span>-{clueCandidate.npcCount}N</span>}
+      {clueCandidate.wild && <span>-*</span>}
+    </div>
+  );
+}
+
 function PlayerElement({ player }: { player: Player }) {
   return (
     <div className="player card">
@@ -60,6 +81,7 @@ function PlayerElement({ player }: { player: Player }) {
         <div className="letter">
           <div>{player.letter}</div>
         </div>
+        <ClueCandidateElement clueCandidate={player.clueCandidate} />
       </div>
     </div>
   );
