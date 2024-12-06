@@ -4,6 +4,7 @@ export interface Player {
   name: string;
   connected: boolean;
   letter: string;
+  deckSize: number;
 }
 
 export interface Npc {

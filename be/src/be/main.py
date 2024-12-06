@@ -1,6 +1,7 @@
 import logging
 from collections import Counter
 from contextlib import asynccontextmanager
+from random import shuffle
 from typing import AsyncIterator, Literal, TypeAlias
 
 import coolname
@@ -10,7 +11,8 @@ from fastapi_camelcase import CamelModel
 from pydantic import Field
 from rich.logging import RichHandler
 
-from .deck import new_deck
+from .corpus import english
+from .deck import deal_words, new_deck
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +47,7 @@ class PlayerData(CamelModel):
     clue_candidate: ClueCandidate | None = None
     vote: str = ""
     letter: str = "?"
+    deck_size: int = 0
 
 
 class NpcData(CamelModel):
@@ -54,17 +57,17 @@ class NpcData(CamelModel):
 
 
 class Npc:
-    def __init__(self, name: str, letter: str, deck_size: int) -> None:
+    def __init__(self, name: str) -> None:
         self.name = name
-        self.letter = letter
-        self.deck_size = deck_size
+        self.letter = "?"
+        self.secret_deck = list[str]()
 
     @property
     def data(self) -> NpcData:
         return NpcData(
             name=self.name,
             letter=self.letter,
-            deck_size=self.deck_size,
+            deck_size=len(self.secret_deck),
         )
 
 
@@ -75,6 +78,8 @@ class Player:
         self.clue_candidate: ClueCandidate | None = None
         self.letter = "?"
         self.vote = ""
+        self.secret_word: str = ""
+        self.secret_deck = list[str]()
 
     @property
     def data(self) -> PlayerData:
@@ -150,14 +155,31 @@ class Game:
             return top_vote
         return ""
 
+    def _deal_secret_words(self) -> None:
+        secret_words = deal_words(
+            self.deck,
+            english(),
+            num_words=len(self.players),
+            word_length=self.settings.player_word_length,
+        )
+        for player, word in zip(self.players.values(), secret_words):
+            player.secret_word = word
+            player.secret_deck = list(word)
+            shuffle(player.secret_deck)
+            player.letter = player.secret_deck.pop()
+            logger.info(f"Secret word for player {player.name}: {word}")
+
+    def _add_npcs(self) -> None:
+        for i in range(6 - len(self.players)):
+            npc = Npc(f"NPC {i + 1}")
+            self.npcs.append(npc)
+            # 1st NPC gets 7 cards, 2nd NPC gets 8 cards, ...
+            npc.secret_deck = [self.deck.pop() for _ in range(7 + i)]
+            npc.letter = npc.secret_deck.pop()
+
     def start(self) -> None:
-        # Fill remaining slots with NPCs
-        for n in range(6 - len(self.players)):
-            self.npcs.append(
-                Npc(name=f"NPC {n + 1}", letter=self.deck.pop(), deck_size=5)
-            )
-        for player in self.players.values():
-            player.letter = self.deck.pop()
+        self._deal_secret_words()
+        self._add_npcs()
         self.phase = VotePhase()
 
 
