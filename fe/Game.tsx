@@ -1,5 +1,16 @@
 import { createContext } from "react";
 
+export interface ApiError {
+  detail: string;
+}
+
+export interface ClueCandidate {
+  length: number;
+  playerCount: number;
+  npcCount: number;
+  wild: boolean;
+}
+
 export interface Player {
   name: string;
   connected: boolean;

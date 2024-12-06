@@ -1,6 +1,7 @@
 import React from "react";
-import { GameContext } from "./Game";
-import { Field, Label, Control, Input } from "./Form";
+import { GameContext, PlayerNameContext, ClueCandidate } from "./Game";
+import { Field, Label, Control, Input, SubmitButton } from "./Form";
+import { toast } from "react-toastify";
 
 function ButtonChoices({
   name,
@@ -58,17 +59,42 @@ function NumberButtonChoices({
 
 export default function ClueCandidateEditor() {
   const game = React.useContext(GameContext);
+  const playerName = React.useContext(PlayerNameContext);
 
   if (game.phase.name != "vote") {
     return false;
   }
+
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const candidate: ClueCandidate = {
+      length: parseInt(data.get("length") as string),
+      playerCount: parseInt(data.get("players") as string),
+      npcCount: parseInt(data.get("npcs") as string),
+      wild: data.get("wild") === "true",
+    };
+    const response = await fetch(
+      `${game.playerUrl(playerName)}/clue_candidate`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(candidate),
+      }
+    );
+    if (!response.ok) {
+      toast.error("Failed to propose clue candidate.");
+      console.error(response);
+      return;
+    }
+  };
 
   return (
     <section className="section">
       <nav className="panel clue-candidate-editor">
         <p className="panel-heading">Clue Candidate</p>
         <div className="panel-block">
-          <form className="form">
+          <form className="form" onSubmit={onSubmit}>
             <Field>
               <Label>Length</Label>
               <Control>
@@ -110,6 +136,8 @@ export default function ClueCandidateEditor() {
                 />
               </Control>
             </Field>
+
+            <SubmitButton>Propose</SubmitButton>
           </form>
         </div>
       </nav>
