@@ -91,6 +91,21 @@ export default function ClueCandidateEditor() {
     }
   };
 
+  const deleteCandidate = async (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+    const response = await fetch(
+      `${game.playerUrl(playerName)}/clue_candidate`,
+      { method: "DELETE" }
+    );
+    if (!response.ok) {
+      toast.error("Failed to delete clue candidate.");
+      console.error(response);
+      return;
+    }
+  };
+
   return (
     <section className="section">
       <nav className="panel clue-candidate-editor">
@@ -146,6 +161,11 @@ export default function ClueCandidateEditor() {
             </Field>
 
             <SubmitButton>Propose</SubmitButton>
+            {candidate && (
+              <button className="button" onClick={deleteCandidate}>
+                Retract
+              </button>
+            )}
           </form>
         </div>
       </nav>
