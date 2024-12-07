@@ -66,6 +66,10 @@ export class Game implements GameData {
   playerUrl(name: string): string {
     return `${this.url}/player/${name}`;
   }
+
+  player(name: string): Player {
+    return this.players.find((p) => p.name === name) as Player;
+  }
 }
 
 export const GameContext = createContext<Game>({} as Game);

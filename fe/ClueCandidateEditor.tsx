@@ -60,6 +60,8 @@ function NumberButtonChoices({
 export default function ClueCandidateEditor() {
   const game = React.useContext(GameContext);
   const playerName = React.useContext(PlayerNameContext);
+  const candidate: ClueCandidate | undefined =
+    game.player(playerName).clueCandidate;
 
   if (game.phase.name != "vote") {
     return false;
@@ -68,18 +70,18 @@ export default function ClueCandidateEditor() {
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const candidate: ClueCandidate = {
+    const newCandidate: ClueCandidate = {
       length: parseInt(data.get("length") as string),
       playerCount: parseInt(data.get("players") as string),
       npcCount: parseInt(data.get("npcs") as string),
-      wild: data.get("wild") === "true",
+      wild: data.get("wild") === "Yes",
     };
     const response = await fetch(
       `${game.playerUrl(playerName)}/clue_candidate`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(candidate),
+        body: JSON.stringify(newCandidate),
       }
     );
     if (!response.ok) {
@@ -98,7 +100,13 @@ export default function ClueCandidateEditor() {
             <Field>
               <Label>Length</Label>
               <Control>
-                <Input type="number" name="length" min={1} max={99} />
+                <Input
+                  type="number"
+                  name="length"
+                  min={1}
+                  max={99}
+                  defaultValue={candidate?.length ?? 0}
+                />
               </Control>
             </Field>
 
@@ -107,9 +115,9 @@ export default function ClueCandidateEditor() {
               <Control>
                 <NumberButtonChoices
                   name="players"
-                  defaultValue={0}
                   minValue={0}
                   maxValue={game.players.length - 1}
+                  defaultValue={candidate?.playerCount ?? 0}
                 />
               </Control>
             </Field>
@@ -119,9 +127,9 @@ export default function ClueCandidateEditor() {
               <Control>
                 <NumberButtonChoices
                   name="npcs"
-                  defaultValue={0}
                   minValue={0}
                   maxValue={game.npcs.length}
+                  defaultValue={candidate?.npcCount ?? 0}
                 />
               </Control>
             </Field>
@@ -131,8 +139,8 @@ export default function ClueCandidateEditor() {
               <Control>
                 <ButtonChoices
                   name="wild"
-                  defaultValue="No"
                   values={["Yes", "No"]}
+                  defaultValue={candidate?.wild ? "Yes" : "No"}
                 />
               </Control>
             </Field>
