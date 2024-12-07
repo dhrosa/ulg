@@ -17,6 +17,7 @@ export interface Player {
   letter: string;
   deckSize: number;
   clueCandidate?: ClueCandidate;
+  vote: string;
 }
 
 export interface Npc {

@@ -60,6 +60,46 @@ function ClueCandidateElement({
   );
 }
 
+function VoteButton({ player }: { player: Player }) {
+  const game = React.useContext(GameContext);
+  const currentPlayerName = React.useContext(PlayerNameContext);
+  const currentPlayer = game.player(currentPlayerName);
+
+  if (game.phase.name != "vote" || !player.clueCandidate) {
+    return false;
+  }
+  const voted = currentPlayer.vote == player.name;
+  const onClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+
+    const url = `${game.playerUrl(currentPlayerName)}/vote`;
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ vote: voted ? "" : player.name }),
+    });
+    if (response.ok) {
+      return;
+    }
+    toast.error("Failed to cast vote.");
+    console.error(response);
+  };
+
+  let voteCount = 0;
+  for (const p of game.players) {
+    if (p.vote == player.name) {
+      voteCount++;
+    }
+  }
+
+  return (
+    <button className={`button ${voted ? "is-primary" : ""}`} onClick={onClick}>
+      {voteCount}
+      <Symbol name="thumb_up" />
+    </button>
+  );
+}
+
 function PlayerElement({ player }: { player: Player }) {
   return (
     <div className="player card">
@@ -82,6 +122,7 @@ function PlayerElement({ player }: { player: Player }) {
           <div>{player.letter}</div>
         </div>
         <ClueCandidateElement clueCandidate={player.clueCandidate} />
+        <VoteButton player={player} />
       </div>
     </div>
   );
