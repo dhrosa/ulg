@@ -27,7 +27,23 @@ function ClueCandidateElement({
   const c = clueCandidate;
   return (
     <div className="clue-candidate">
-      {c.length}-{c.playerCount}P-{c.npcCount}N{c.wild ? "-*" : ""}
+      <span className="value">{c.length}</span>
+      <span>C</span>
+
+      <span>-</span>
+      <span className="value">{c.playerCount}</span>
+      <span>P</span>
+
+      <span>-</span>
+      <span className="value">{c.npcCount}</span>
+      <span>N</span>
+
+      {c.wild && (
+        <>
+          <span>-</span>
+          <span className="value">*</span>
+        </>
+      )}
     </div>
   );
 }

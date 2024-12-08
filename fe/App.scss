@@ -74,6 +74,10 @@ main {
 
     .clue-candidate {
       white-space: nowrap;
+      :not(.value) {
+        @extend .has-text-grey;
+        font-size: 0.8em;
+      }
     }
   }
 }
