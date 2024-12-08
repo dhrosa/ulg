@@ -24,14 +24,10 @@ function ClueCandidateElement({
   if (!clueCandidate) {
     return false;
   }
+  const c = clueCandidate;
   return (
     <div className="clue-candidate">
-      <span>{clueCandidate.length}</span>
-      {clueCandidate.playerCount > 0 && (
-        <span>-{clueCandidate.playerCount}P</span>
-      )}
-      {clueCandidate.npcCount > 0 && <span>-{clueCandidate.npcCount}N</span>}
-      {clueCandidate.wild && <span>-*</span>}
+      {c.length}-{c.playerCount}P-{c.npcCount}N{c.wild ? "-*" : ""}
     </div>
   );
 }
@@ -73,7 +69,10 @@ function PlayerFooter({ player }: { player: Player }) {
       >
         <Symbol name="thumb_up" />
       </button>
-      <div className="card-footer-item">{voteCount}&nbsp;votes</div>
+      <div className="card-footer-item is-flex is-flex-direction-column">
+        <ClueCandidateElement clueCandidate={player.clueCandidate} />
+        <div>{voteCount}&nbsp;votes</div>
+      </div>
       <button className="card-footer-item button" onClick={() => vote("")}>
         <Symbol name="thumb_down" />
       </button>
@@ -103,7 +102,6 @@ export function PlayerElement({ player }: { player: Player }) {
         <div className="letter">
           <div>{player.letter}</div>
         </div>
-        <ClueCandidateElement clueCandidate={player.clueCandidate} />
       </div>
       <PlayerFooter player={player} />
     </div>
