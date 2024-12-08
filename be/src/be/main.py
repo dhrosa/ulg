@@ -2,7 +2,7 @@ import logging
 from collections import Counter
 from contextlib import asynccontextmanager
 from random import shuffle
-from typing import AsyncIterator, Literal, TypeAlias
+from typing import Annotated, AsyncIterator, Literal, TypeAlias
 
 import coolname
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
@@ -39,6 +39,29 @@ class ClueCandidate(CamelModel):
     player_count: int
     npc_count: int
     wild: bool
+
+
+class TokenOnWild(CamelModel):
+    kind: Literal["wild"] = "wild"
+
+
+class TokenOnPlayer(CamelModel):
+    kind: Literal["player"] = "player"
+    player_name: str
+
+
+class TokenOnNpc(CamelModel):
+    kind: Literal["npc"] = "npc"
+    npc_name: str
+
+
+Token: TypeAlias = Annotated[
+    TokenOnWild | TokenOnPlayer | TokenOnNpc, Field(discriminator="kind")
+]
+
+
+class Clue(CamelModel):
+    tokens: list[Token]
 
 
 class PlayerData(CamelModel):
@@ -105,7 +128,12 @@ class CluePhase(CamelModel):
     clue_giver: str
 
 
-Phase: TypeAlias = LobbyPhase | VotePhase | CluePhase
+class GuessPhase(CamelModel):
+    name: Literal["guess"] = "guess"
+    clue: Clue
+
+
+Phase: TypeAlias = LobbyPhase | VotePhase | CluePhase | GuessPhase
 
 
 class GameData(CamelModel):
@@ -303,4 +331,13 @@ async def game_start(game_id: str) -> None:
             )
 
     game.start()
+    await game.broadcast()
+
+
+@app.put("/game/{game_id}/clue")
+async def game_set_clue(game_id: str, clue: Clue) -> None:
+    game = game_or_404(game_id)
+    if not isinstance(game.phase, CluePhase):
+        raise HTTPException(status_code=409, detail="Game is not in clue phase")
+    game.phase = GuessPhase(clue=clue)
     await game.broadcast()
