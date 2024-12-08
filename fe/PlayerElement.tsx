@@ -77,23 +77,24 @@ function VoteButton({ player }: { player: Player }) {
 }
 
 export function PlayerElement({ player }: { player: Player }) {
+  const connectionTag = player.connected ? (
+    <Tag className="is-success" title="Player is online">
+      <Symbol name="wifi" />
+    </Tag>
+  ) : (
+    <Tag className="is-warning" title="Player is offline">
+      <Symbol name="wifi_off" />
+    </Tag>
+  );
   return (
     <div className="player card">
       <header className="card-header">
-        <div className="card-header-title">{player.name}</div>
+        <div className="card-header-title">
+          <span>{player.name}&nbsp;</span>
+          {connectionTag}
+        </div>
       </header>
       <div className="card-content">
-        <div className="tags">
-          {player.connected ? (
-            <Tag className="is-success">
-              <Symbol name="wifi" />
-            </Tag>
-          ) : (
-            <Tag className="is-warning">
-              <Symbol name="wifi_off" />
-            </Tag>
-          )}
-        </div>
         <div className="letter">
           <div>{player.letter}</div>
         </div>
@@ -108,14 +109,14 @@ export function NpcElement({ npc }: { npc: Npc }) {
   return (
     <div className="player card">
       <header className="card-header">
-        <div className="card-header-title">{npc.name}</div>
-      </header>
-      <div className="card-content">
-        <div className="tags">
-          <Tag>
+        <div className="card-header-title">
+          <span>{npc.name}&nbsp;</span>
+          <Tag title="Non-player character">
             <Symbol name="smart_toy" />
           </Tag>
         </div>
+      </header>
+      <div className="card-content">
         <div className="letter">
           <div>{npc.letter}</div>
         </div>
