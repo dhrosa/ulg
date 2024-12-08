@@ -36,31 +36,14 @@ function ClueCandidateElement({
   );
 }
 
-function VoteButton({ player }: { player: Player }) {
+function PlayerFooter({ player }: { player: Player }) {
   const game = React.useContext(GameContext);
   const currentPlayerName = React.useContext(PlayerNameContext);
   const currentPlayer = game.player(currentPlayerName);
 
-  if (game.phase.name != "vote" || !player.clueCandidate) {
+  if (game.phase.name != "vote") {
     return false;
   }
-  const voted = currentPlayer.vote == player.name;
-  const onClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-
-    const url = `${game.playerUrl(currentPlayerName)}/vote`;
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ vote: voted ? "" : player.name }),
-    });
-    if (response.ok) {
-      return;
-    }
-    toast.error("Failed to cast vote.");
-    console.error(response);
-  };
-
   let voteCount = 0;
   for (const p of game.players) {
     if (p.vote == player.name) {
@@ -68,11 +51,33 @@ function VoteButton({ player }: { player: Player }) {
     }
   }
 
+  const vote = async (target: string) => {
+    const response = await fetch(`${game.playerUrl(currentPlayerName)}/vote`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ vote: target }),
+    });
+    if (!response.ok) {
+      toast.error("Failed to cast vote.");
+      console.error(response);
+      return;
+    }
+  };
+
+  const voted = currentPlayer.vote == player.name;
   return (
-    <button className={`button ${voted ? "is-primary" : ""}`} onClick={onClick}>
-      {voteCount}
-      <Symbol name="thumb_up" />
-    </button>
+    <footer className="card-footer">
+      <button
+        className={"card-footer-item button " + (voted ? "is-primary" : "")}
+        onClick={() => vote(voted ? "" : player.name)}
+      >
+        <Symbol name="thumb_up" />
+      </button>
+      <div className="card-footer-item">{voteCount}&nbsp;votes</div>
+      <button className="card-footer-item button" onClick={() => vote("")}>
+        <Symbol name="thumb_down" />
+      </button>
+    </footer>
   );
 }
 
@@ -99,8 +104,8 @@ export function PlayerElement({ player }: { player: Player }) {
           <div>{player.letter}</div>
         </div>
         <ClueCandidateElement clueCandidate={player.clueCandidate} />
-        <VoteButton player={player} />
       </div>
+      <PlayerFooter player={player} />
     </div>
   );
 }

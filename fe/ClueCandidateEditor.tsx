@@ -120,7 +120,7 @@ export default function ClueCandidateEditor() {
                   name="length"
                   min={1}
                   max={99}
-                  defaultValue={candidate?.length ?? 0}
+                  defaultValue={candidate?.length ?? 1}
                 />
               </Control>
             </Field>
