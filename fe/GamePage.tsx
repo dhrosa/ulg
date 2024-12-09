@@ -4,10 +4,10 @@ import useWebSocket, { ReadyState } from "react-use-websocket";
 import { Field, Label, Control, SubmitButton } from "./Form";
 import { toast } from "react-toastify";
 import { useLocalStorage } from "react-use";
-import { Game, GameData, GameContext, PlayerNameContext } from "./Game";
+import { Game, GameData, GameContext, PlayerNameContext, Token } from "./Game";
 import ClueCandidateEditor from "./ClueCandidateEditor";
 import { Players } from "./PlayerElement";
-import { ClueContextProvider } from "./ClueContext";
+import { ClueContextProvider, useClueContext } from "./ClueContext";
 
 function readyStateName(readyState: ReadyState) {
   switch (readyState) {
@@ -153,6 +153,51 @@ function DebugInfo() {
   );
 }
 
+function ClueEditor() {
+  const game = React.useContext(GameContext);
+  const playerName = React.useContext(PlayerNameContext);
+  const [clue, clueDispatch] = useClueContext();
+  if (game.phase.name != "clue") {
+    return false;
+  }
+  if (game.phase.clueGiver != playerName) {
+    return false;
+  }
+  const tokenLetter = (token: Token) => {
+    if (token.kind === "player") {
+      return game.player(token.playerName).letter;
+    }
+    return "?";
+  };
+  return (
+    <section className="section">
+      <nav className="panel clue-editor">
+        <p className="panel-heading">Clue Editor</p>
+        <div className="panel-block">
+          <div className="clue">
+            {clue.map((token, i) => (
+              <div key={i} className="letter">
+                <div>{tokenLetter(token)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="panel-block">
+          <button className="button is-primary">Submit</button>
+          <button
+            className="button"
+            onClick={() => {
+              clueDispatch({ type: "clear" });
+            }}
+          >
+            Reset
+          </button>
+        </div>
+      </nav>
+    </section>
+  );
+}
+
 function LoggedInPage() {
   const initialGame = React.useContext(GameContext);
   const playerName = React.useContext(PlayerNameContext);
@@ -175,6 +220,7 @@ function LoggedInPage() {
           <Players />
           <StartGameButton />
           <ClueCandidateEditor />
+          <ClueEditor />
           <DebugInfo />
         </div>
       </ClueContextProvider>
