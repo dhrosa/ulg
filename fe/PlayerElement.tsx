@@ -104,6 +104,9 @@ function ClueFooter({ player }: { player: Player }) {
   if (game.phase.clueGiver != currentPlayerName) {
     return false;
   }
+  if (player.name == currentPlayerName) {
+    return false;
+  }
   const appendToClue = () => {
     clueDispatch({
       type: "add",
