@@ -9,6 +9,7 @@ import React from "react";
 import { toast } from "react-toastify";
 import Symbol from "./Symbol";
 import { useClueContext } from "./ClueContext";
+import Letter from "./Letter";
 
 function Tag({
   className,
@@ -187,9 +188,7 @@ export function PlayerElement({ player }: { player: Player }) {
         </div>
       </header>
       <div className="card-content">
-        <div className="letter">
-          <div>{player.letter}</div>
-        </div>
+        <Letter letter={player.letter} />
       </div>
       {game.phase.name == "vote" && <VoteFooter player={player} />}
       {game.phase.name == "clue" && <ClueFooter player={player} />}
@@ -209,9 +208,7 @@ export function NpcElement({ npc }: { npc: Npc }) {
         </div>
       </header>
       <div className="card-content">
-        <div className="letter">
-          <div>{npc.letter}</div>
-        </div>
+        <Letter letter={npc.letter} />
       </div>
     </div>
   );

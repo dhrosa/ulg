@@ -8,6 +8,7 @@ import { Game, GameData, GameContext, PlayerNameContext, Token } from "./Game";
 import ClueCandidateEditor from "./ClueCandidateEditor";
 import { Players } from "./PlayerElement";
 import { ClueContextProvider, useClueContext } from "./ClueContext";
+import Letter from "./Letter";
 
 function readyStateName(readyState: ReadyState) {
   switch (readyState) {
@@ -176,9 +177,7 @@ function ClueEditor() {
         <div className="panel-block">
           <div className="clue">
             {clue.map((token, i) => (
-              <div key={i} className="letter">
-                <div>{tokenLetter(token)}</div>
-              </div>
+              <Letter key={i} letter={tokenLetter(token)} />
             ))}
           </div>
         </div>
