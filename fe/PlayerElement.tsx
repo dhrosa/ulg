@@ -8,6 +8,7 @@ import {
 import React from "react";
 import { toast } from "react-toastify";
 import Symbol from "./Symbol";
+import { useClueContext } from "./ClueContext";
 
 function Tag({
   className,
@@ -48,14 +49,11 @@ function ClueCandidateElement({
   );
 }
 
-function PlayerFooter({ player }: { player: Player }) {
+function VoteFooter({ player }: { player: Player }) {
   const game = React.useContext(GameContext);
   const currentPlayerName = React.useContext(PlayerNameContext);
   const currentPlayer = game.player(currentPlayerName);
 
-  if (game.phase.name != "vote") {
-    return false;
-  }
   let voteCount = 0;
   for (const p of game.players) {
     if (p.vote == player.name) {
@@ -96,7 +94,68 @@ function PlayerFooter({ player }: { player: Player }) {
   );
 }
 
+function ClueFooter({ player }: { player: Player }) {
+  const game = React.useContext(GameContext);
+  const currentPlayerName = React.useContext(PlayerNameContext);
+  const [clue, clueDispatch] = useClueContext();
+  if (game.phase.name != "clue") {
+    return false;
+  }
+  if (game.phase.clueGiver != currentPlayerName) {
+    return false;
+  }
+  const appendToClue = () => {
+    clueDispatch({
+      type: "add",
+      token: { kind: "player", playerName: player.name },
+    });
+  };
+  const tokenNumbers = [];
+  for (const [index, token] of clue.entries()) {
+    if (token.kind == "player" && token.playerName == player.name) {
+      tokenNumbers.push(index + 1);
+      continue;
+    }
+  }
+  const color = (n: number) => {
+    const hslColors = [
+      "0 100% 84%",
+      "33 100% 84%",
+      "62 100% 86%",
+      "110 100% 87%",
+      "185 100% 80%",
+      "217 100% 81%",
+      "249 100% 85%",
+      "300 100% 89%",
+    ];
+    return `hsl(${hslColors[(n - 1) % hslColors.length]})`;
+  };
+  return (
+    <footer className="card-footer">
+      <div className="card-footer-item">
+        <div className="tags">
+          {tokenNumbers.map((n) => (
+            <Tag
+              key={n}
+              className="token is-rounded"
+              style={{
+                backgroundColor: color(n),
+              }}
+            >
+              {n}
+            </Tag>
+          ))}
+          <a href="#" onClick={appendToClue}>
+            <Tag>+</Tag>
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
 export function PlayerElement({ player }: { player: Player }) {
+  const game = React.useContext(GameContext);
   const connectionTag = player.connected ? (
     <Tag className="is-success" title="Player is online">
       <Symbol name="wifi" />
@@ -119,7 +178,8 @@ export function PlayerElement({ player }: { player: Player }) {
           <div>{player.letter}</div>
         </div>
       </div>
-      <PlayerFooter player={player} />
+      {game.phase.name == "vote" && <VoteFooter player={player} />}
+      {game.phase.name == "clue" && <ClueFooter player={player} />}
     </div>
   );
 }
@@ -141,5 +201,19 @@ export function NpcElement({ npc }: { npc: Npc }) {
         </div>
       </div>
     </div>
+  );
+}
+
+export function Players() {
+  const game = React.useContext(GameContext);
+  return (
+    <section className="section players">
+      {game.players.map((player) => (
+        <PlayerElement key={player.name} player={player} />
+      ))}
+      {game.npcs.map((npc) => (
+        <NpcElement key={npc.name} npc={npc} />
+      ))}
+    </section>
   );
 }

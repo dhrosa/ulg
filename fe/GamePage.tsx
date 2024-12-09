@@ -6,7 +6,8 @@ import { toast } from "react-toastify";
 import { useLocalStorage } from "react-use";
 import { Game, GameData, GameContext, PlayerNameContext } from "./Game";
 import ClueCandidateEditor from "./ClueCandidateEditor";
-import { PlayerElement, NpcElement } from "./PlayerElement";
+import { Players } from "./PlayerElement";
+import { ClueContextProvider } from "./ClueContext";
 
 function readyStateName(readyState: ReadyState) {
   switch (readyState) {
@@ -23,20 +24,6 @@ function readyStateName(readyState: ReadyState) {
     default:
       return "unknown";
   }
-}
-
-function Players() {
-  const game = React.useContext(GameContext);
-  return (
-    <section className="section players">
-      {game.players.map((player) => (
-        <PlayerElement key={player.name} player={player} />
-      ))}
-      {game.npcs.map((npc) => (
-        <NpcElement key={npc.name} npc={npc} />
-      ))}
-    </section>
-  );
 }
 
 function LoadedPage() {
@@ -182,13 +169,15 @@ function LoggedInPage() {
 
   return (
     <GameContext.Provider value={game}>
-      <div className="game-page container is-fluid">
-        <GameInfo connectionStatus={readyStateName(readyState)} />
-        <Players />
-        <StartGameButton />
-        <ClueCandidateEditor />
-        <DebugInfo />
-      </div>
+      <ClueContextProvider>
+        <div className="game-page container is-fluid">
+          <GameInfo connectionStatus={readyStateName(readyState)} />
+          <Players />
+          <StartGameButton />
+          <ClueCandidateEditor />
+          <DebugInfo />
+        </div>
+      </ClueContextProvider>
     </GameContext.Provider>
   );
 }

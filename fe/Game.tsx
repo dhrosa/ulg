@@ -34,8 +34,25 @@ interface VotePhase {
   name: "vote";
 }
 
+interface TokenOnPlayer {
+  kind: "player";
+  playerName: string;
+}
+
+interface TokenOnNpc {
+  kind: "npc";
+  npcName: string;
+}
+
+interface TokenOnWild {
+  kind: "wild";
+}
+
+export type Token = TokenOnPlayer | TokenOnNpc | TokenOnWild;
+
 interface CluePhase {
   name: "clue";
+  clueGiver: string;
 }
 
 type Phase = LobbyPhase | VotePhase | CluePhase;
