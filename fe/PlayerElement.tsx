@@ -159,15 +159,25 @@ function ClueFooter({ player }: { player: Player }) {
 
 export function PlayerElement({ player }: { player: Player }) {
   const game = React.useContext(GameContext);
-  const connectionTag = player.connected ? (
-    <Tag className="is-success" title="Player is online">
-      <Symbol name="wifi" />
-    </Tag>
-  ) : (
-    <Tag className="is-warning" title="Player is offline">
-      <Symbol name="wifi_off" />
-    </Tag>
-  );
+  const currentPlayerName = React.useContext(PlayerNameContext);
+  let connectionTag;
+  if (player.name == currentPlayerName) {
+    connectionTag = (
+      <Tag>
+        <Symbol name="star" />
+      </Tag>
+    );
+  } else {
+    connectionTag = player.connected ? (
+      <Tag className="is-success" title="Player is online">
+        <Symbol name="wifi" />
+      </Tag>
+    ) : (
+      <Tag className="is-warning" title="Player is offline">
+        <Symbol name="wifi_off" />
+      </Tag>
+    );
+  }
   return (
     <div className="player card">
       <header className="card-header">
