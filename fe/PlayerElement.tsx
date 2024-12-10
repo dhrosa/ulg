@@ -11,13 +11,8 @@ import Symbol from "./Symbol";
 import { useClueContext } from "./ClueContext";
 import Letter from "./Letter";
 import { motion } from "motion/react";
-
-function Tag({
-  className,
-  ...rest
-}: { className?: string } & React.ComponentProps<"div">) {
-  return <div className={`tag ${className || ""}`} {...rest} />;
-}
+import Tag from "./Tag";
+import NumberToken from "./NumberToken";
 
 function ClueCandidateElement({
   clueCandidate,
@@ -109,33 +104,12 @@ function ClueFooter({ player }: { player: Player }) {
       continue;
     }
   }
-  const color = (n: number) => {
-    const hslColors = [
-      "0 100% 84%",
-      "33 100% 84%",
-      "62 100% 86%",
-      "110 100% 87%",
-      "185 100% 80%",
-      "217 100% 81%",
-      "249 100% 85%",
-      "300 100% 89%",
-    ];
-    return `hsl(${hslColors[(n - 1) % hslColors.length]})`;
-  };
   return (
     <footer className="card-footer">
       <div className="card-footer-item">
-        <div className="tags">
+        <div className="tags tokens">
           {tokenNumbers.map((n) => (
-            <Tag
-              key={n}
-              className="token is-rounded"
-              style={{
-                backgroundColor: color(n),
-              }}
-            >
-              {n}
-            </Tag>
+            <NumberToken n={n} key={n} />
           ))}
         </div>
       </div>
