@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import Symbol from "./Symbol";
 import { useClueContext } from "./ClueContext";
 import Letter from "./Letter";
+import { motion } from "motion/react";
 
 function Tag({
   className,
@@ -97,23 +98,10 @@ function VoteFooter({ player }: { player: Player }) {
 
 function ClueFooter({ player }: { player: Player }) {
   const game = React.useContext(GameContext);
-  const currentPlayerName = React.useContext(PlayerNameContext);
-  const [clue, clueDispatch] = useClueContext();
+  const [clue] = useClueContext();
   if (game.phase.name != "clue") {
     return false;
   }
-  if (game.phase.clueGiver != currentPlayerName) {
-    return false;
-  }
-  if (player.name == currentPlayerName) {
-    return false;
-  }
-  const appendToClue = () => {
-    clueDispatch({
-      type: "add",
-      token: { kind: "player", playerName: player.name },
-    });
-  };
   const tokenNumbers = [];
   for (const [index, token] of clue.entries()) {
     if (token.kind == "player" && token.playerName == player.name) {
@@ -149,9 +137,6 @@ function ClueFooter({ player }: { player: Player }) {
               {n}
             </Tag>
           ))}
-          <a href="#" onClick={appendToClue}>
-            <Tag>+</Tag>
-          </a>
         </div>
       </div>
     </footer>
@@ -181,8 +166,28 @@ function ConnectionTag({ player }: { player: Player }) {
   );
 }
 
+function ClickableLetter({ player }: { player: Player }) {
+  const [, clueDispatch] = useClueContext();
+  return (
+    <motion.a
+      whileHover={{ scale: 1.2 }}
+      onClick={() => {
+        clueDispatch({
+          type: "add",
+          token: { kind: "player", playerName: player.name },
+        });
+      }}
+    >
+      <Letter letter={player.letter} />
+    </motion.a>
+  );
+}
+
 export function PlayerElement({ player }: { player: Player }) {
   const game = React.useContext(GameContext);
+  const currentPlayerName = React.useContext(PlayerNameContext);
+  const isClueGiver =
+    game.phase.name == "clue" && game.phase.clueGiver == currentPlayerName;
   return (
     <div className="player card">
       <header className="card-header">
@@ -192,7 +197,11 @@ export function PlayerElement({ player }: { player: Player }) {
         </div>
       </header>
       <div className="card-content">
-        <Letter letter={player.letter} />
+        {isClueGiver && player.name != currentPlayerName ? (
+          <ClickableLetter player={player} />
+        ) : (
+          <Letter letter={player.letter} />
+        )}
       </div>
       {game.phase.name == "vote" && <VoteFooter player={player} />}
       {game.phase.name == "clue" && <ClueFooter player={player} />}
