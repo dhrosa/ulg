@@ -4,6 +4,7 @@ import {
   GameContext,
   PlayerNameContext,
   ClueCandidate,
+  Token,
 } from "./Game";
 import React from "react";
 import { toast } from "react-toastify";
@@ -91,15 +92,42 @@ function VoteFooter({ player }: { player: Player }) {
   );
 }
 
-function ClueFooter({ player }: { player: Player }) {
-  const game = React.useContext(GameContext);
-  const [clue] = useClueContext();
-  if (game.phase.name != "clue") {
-    return false;
+interface PlayerStand {
+  kind: "player";
+  player: Player;
+}
+
+interface NpcStand {
+  kind: "npc";
+  npc: Npc;
+}
+
+type Stand = PlayerStand | NpcStand;
+
+function standLetter(stand: Stand) {
+  switch (stand.kind) {
+    case "player":
+      return stand.player.letter;
+    case "npc":
+      return stand.npc.letter;
   }
+}
+
+function tokenMatchesStand(token: Token, stand: Stand) {
+  if (stand.kind == "player" && token.kind == "player") {
+    return token.playerName == stand.player.name;
+  }
+  if (stand.kind == "npc" && token.kind == "npc") {
+    return token.npcName == stand.npc.name;
+  }
+  return false;
+}
+
+function ClueFooter({ stand }: { stand: Stand }) {
+  const [clue] = useClueContext();
   const tokenNumbers = [];
   for (const [index, token] of clue.entries()) {
-    if (token.kind == "player" && token.playerName == player.name) {
+    if (tokenMatchesStand(token, stand)) {
       tokenNumbers.push(index + 1);
       continue;
     }
@@ -140,19 +168,24 @@ function ConnectionTag({ player }: { player: Player }) {
   );
 }
 
-function ClickableLetter({ player }: { player: Player }) {
+function ClickableLetter({ stand }: { stand: Stand }) {
   const [, clueDispatch] = useClueContext();
+  const token = (): Token => {
+    switch (stand.kind) {
+      case "player":
+        return { kind: "player", playerName: stand.player.name };
+      case "npc":
+        return { kind: "npc", npcName: stand.npc.name };
+    }
+  };
   return (
     <motion.a
       whileHover={{ scale: 1.2 }}
       onClick={() => {
-        clueDispatch({
-          type: "add",
-          token: { kind: "player", playerName: player.name },
-        });
+        clueDispatch({ type: "add", token: token() });
       }}
     >
-      <Letter letter={player.letter} />
+      <Letter letter={standLetter(stand)} />
     </motion.a>
   );
 }
@@ -162,6 +195,7 @@ export function PlayerElement({ player }: { player: Player }) {
   const currentPlayerName = React.useContext(PlayerNameContext);
   const isClueGiver =
     game.phase.name == "clue" && game.phase.clueGiver == currentPlayerName;
+  const stand: PlayerStand = { kind: "player", player };
   return (
     <div className="player card">
       <header className="card-header">
@@ -172,18 +206,22 @@ export function PlayerElement({ player }: { player: Player }) {
       </header>
       <div className="card-content">
         {isClueGiver && player.name != currentPlayerName ? (
-          <ClickableLetter player={player} />
+          <ClickableLetter stand={stand} />
         ) : (
           <Letter letter={player.letter} />
         )}
       </div>
       {game.phase.name == "vote" && <VoteFooter player={player} />}
-      {game.phase.name == "clue" && <ClueFooter player={player} />}
+      {game.phase.name == "clue" && <ClueFooter stand={stand} />}
     </div>
   );
 }
 
 export function NpcElement({ npc }: { npc: Npc }) {
+  const game = React.useContext(GameContext);
+  const currentPlayerName = React.useContext(PlayerNameContext);
+  const isClueGiver =
+    game.phase.name == "clue" && game.phase.clueGiver == currentPlayerName;
   return (
     <div className="player card">
       <header className="card-header">
@@ -195,8 +233,13 @@ export function NpcElement({ npc }: { npc: Npc }) {
         </div>
       </header>
       <div className="card-content">
-        <Letter letter={npc.letter} />
+        {isClueGiver ? (
+          <ClickableLetter stand={{ kind: "npc", npc }} />
+        ) : (
+          <Letter letter={npc.letter} />
+        )}
       </div>
+      {game.phase.name == "clue" && <ClueFooter stand={{ kind: "npc", npc }} />}
     </div>
   );
 }

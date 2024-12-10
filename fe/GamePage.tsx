@@ -165,10 +165,14 @@ function ClueEditor() {
     return false;
   }
   const tokenLetter = (token: Token) => {
-    if (token.kind === "player") {
-      return game.player(token.playerName).letter;
+    switch (token.kind) {
+      case "player":
+        return game.player(token.playerName).letter;
+      case "npc":
+        return game.npc(token.npcName).letter;
+      case "wild":
+        return "*";
     }
-    return "?";
   };
   return (
     <section className="section">

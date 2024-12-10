@@ -88,6 +88,10 @@ export class Game implements GameData {
   player(name: string): Player {
     return this.players.find((p) => p.name === name) as Player;
   }
+
+  npc(name: string): Npc {
+    return this.npcs.find((n) => n.name === name) as Npc;
+  }
 }
 
 export const GameContext = createContext<Game>({} as Game);
