@@ -18,11 +18,8 @@ import NumberToken from "./NumberToken";
 function ClueCandidateElement({
   clueCandidate,
 }: {
-  clueCandidate?: ClueCandidate;
+  clueCandidate: ClueCandidate;
 }) {
-  if (!clueCandidate) {
-    return false;
-  }
   const c = clueCandidate;
   return (
     <div className="clue-candidate">
@@ -47,21 +44,10 @@ function ClueCandidateElement({
   );
 }
 
-interface PlayerStand {
-  kind: "player";
-  player: Player;
-}
-
-interface NpcStand {
-  kind: "npc";
-  npc: Npc;
-}
-
-interface WildStand {
-  kind: "wild";
-}
-
-type Stand = PlayerStand | NpcStand | WildStand;
+type Stand =
+  | { kind: "player"; player: Player }
+  | { kind: "npc"; npc: Npc }
+  | { kind: "wild" };
 
 function standName(stand: Stand) {
   switch (stand.kind) {
@@ -135,7 +121,9 @@ function VoteFooter({ stand }: { stand: Stand }) {
         <Symbol name="thumb_up" />
       </button>
       <div className="card-footer-item is-flex is-flex-direction-column">
-        <ClueCandidateElement clueCandidate={player.clueCandidate} />
+        {player.clueCandidate && (
+          <ClueCandidateElement clueCandidate={player.clueCandidate} />
+        )}
         <div>{voteCount}&nbsp;votes</div>
       </div>
       <button className="card-footer-item button" onClick={() => vote("")}>
@@ -265,7 +253,7 @@ export default function Stands() {
       {game.npcs.map((npc) => (
         <StandElement key={npc.name} stand={{ kind: "npc", npc }} />
       ))}
-      <StandElement stand={{ kind: "wild" }} />
+      {game.phase.name != "lobby" && <StandElement stand={{ kind: "wild" }} />}
     </section>
   );
 }
