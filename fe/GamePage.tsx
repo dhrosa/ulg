@@ -174,6 +174,18 @@ function ClueEditor() {
         return "*";
     }
   };
+  const submit = async () => {
+    const response = await fetch(`${game.url}/clue`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tokens: clue }),
+    });
+    if (!response.ok) {
+      toast.error("Failed to submit clue.");
+      console.error(response);
+      return;
+    }
+  };
   return (
     <section className="section">
       <nav className="panel clue-editor">
@@ -186,7 +198,9 @@ function ClueEditor() {
           </div>
         </div>
         <div className="panel-block">
-          <button className="button is-primary">Submit</button>
+          <button className="button is-primary" onClick={submit}>
+            Submit
+          </button>
           <button
             className="button"
             onClick={() => {
