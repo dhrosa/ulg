@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import { useLocalStorage } from "react-use";
 import { Game, GameData, GameContext, PlayerNameContext, Token } from "./Game";
 import ClueCandidateEditor from "./ClueCandidateEditor";
-import { Players } from "./PlayerElement";
+import Stands from "./Stands";
 import { ClueContextProvider, useClueContext } from "./ClueContext";
 import Letter from "./Letter";
 
@@ -220,7 +220,7 @@ function LoggedInPage() {
       <ClueContextProvider>
         <div className="game-page container is-fluid">
           <GameInfo connectionStatus={readyStateName(readyState)} />
-          <Players />
+          <Stands />
           <StartGameButton />
           <ClueCandidateEditor />
           <ClueEditor />

@@ -226,10 +226,10 @@ function StandLetter({ stand }: { stand: Stand }) {
   );
 }
 
-export function StandElement({ stand }: { stand: Stand }) {
+function StandElement({ stand }: { stand: Stand }) {
   const game = React.useContext(GameContext);
   return (
-    <div className="player card">
+    <div className="stand card">
       <header className="card-header">
         <div className="card-header-title">
           <span>{standName(stand)}&nbsp;</span>
@@ -245,10 +245,10 @@ export function StandElement({ stand }: { stand: Stand }) {
   );
 }
 
-export function Players() {
+export default function Stands() {
   const game = React.useContext(GameContext);
   return (
-    <section className="section players">
+    <section className="section stands">
       {game.players.map((player) => (
         <StandElement key={player.name} stand={{ kind: "player", player }} />
       ))}

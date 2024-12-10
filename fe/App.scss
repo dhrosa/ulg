@@ -54,14 +54,14 @@ main {
   justify-content: space-evenly;
 }
 
-.players {
+.stands {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: space-evenly;
   align-items: start;
 
-  .player {
+  .stand {
     &:not(:last-child) {
       margin-bottom: revert;
     }
