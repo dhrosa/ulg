@@ -9,6 +9,7 @@ import ClueCandidateEditor from "./ClueCandidateEditor";
 import Stands from "./Stands";
 import { ClueContextProvider, useClueContext } from "./ClueContext";
 import Letter from "./Letter";
+import NumberToken from "./NumberToken";
 
 function readyStateName(readyState: ReadyState) {
   switch (readyState) {
@@ -207,17 +208,26 @@ function ClueEditor() {
 
 function GuessWidget() {
   const game = React.useContext(GameContext);
+  const [clue, clueDispatch] = useClueContext();
   if (game.phase.name != "guess") {
     return false;
   }
+  React.useEffect(() => {
+    if (game.phase.name == "guess") {
+      clueDispatch({ type: "set", tokens: game.phase.clue });
+    }
+  }, [game]);
   return (
     <section className="section">
       <nav className="panel">
         <p className="panel-heading">Clue</p>
         <div className="panel-block">
           <div className="clue">
-            {game.phase.clue.map((token, i) => (
-              <Letter key={i} letter={game.tokenLetter(token)} />
+            {clue.map((token, i) => (
+              <div key={i}>
+                <Letter letter={game.tokenLetter(token)} />
+                <NumberToken n={i + 1} />
+              </div>
             ))}
           </div>
         </div>

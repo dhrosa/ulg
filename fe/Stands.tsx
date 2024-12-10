@@ -238,7 +238,9 @@ function StandElement({ stand }: { stand: Stand }) {
         <StandLetter stand={stand} />
       </div>
       {game.phase.name == "vote" && <VoteFooter stand={stand} />}
-      {game.phase.name == "clue" && <ClueFooter stand={stand} />}
+      {(game.phase.name == "clue" || game.phase.name == "guess") && (
+        <ClueFooter stand={stand} />
+      )}
     </div>
   );
 }
