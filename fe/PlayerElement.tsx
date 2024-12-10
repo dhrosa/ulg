@@ -47,10 +47,55 @@ function ClueCandidateElement({
   );
 }
 
-function VoteFooter({ player }: { player: Player }) {
+interface PlayerStand {
+  kind: "player";
+  player: Player;
+}
+
+interface NpcStand {
+  kind: "npc";
+  npc: Npc;
+}
+
+type Stand = PlayerStand | NpcStand;
+
+function standName(stand: Stand) {
+  switch (stand.kind) {
+    case "player":
+      return stand.player.name;
+    case "npc":
+      return stand.npc.name;
+  }
+}
+
+function standLetter(stand: Stand) {
+  switch (stand.kind) {
+    case "player":
+      return stand.player.letter;
+    case "npc":
+      return stand.npc.letter;
+  }
+}
+
+function tokenMatchesStand(token: Token, stand: Stand) {
+  if (stand.kind == "player" && token.kind == "player") {
+    return token.playerName == stand.player.name;
+  }
+  if (stand.kind == "npc" && token.kind == "npc") {
+    return token.npcName == stand.npc.name;
+  }
+  return false;
+}
+
+function VoteFooter({ stand }: { stand: Stand }) {
   const game = React.useContext(GameContext);
   const currentPlayerName = React.useContext(PlayerNameContext);
   const currentPlayer = game.player(currentPlayerName);
+
+  if (stand.kind != "player") {
+    return false;
+  }
+  const player = stand.player;
 
   let voteCount = 0;
   for (const p of game.players) {
@@ -92,37 +137,6 @@ function VoteFooter({ player }: { player: Player }) {
   );
 }
 
-interface PlayerStand {
-  kind: "player";
-  player: Player;
-}
-
-interface NpcStand {
-  kind: "npc";
-  npc: Npc;
-}
-
-type Stand = PlayerStand | NpcStand;
-
-function standLetter(stand: Stand) {
-  switch (stand.kind) {
-    case "player":
-      return stand.player.letter;
-    case "npc":
-      return stand.npc.letter;
-  }
-}
-
-function tokenMatchesStand(token: Token, stand: Stand) {
-  if (stand.kind == "player" && token.kind == "player") {
-    return token.playerName == stand.player.name;
-  }
-  if (stand.kind == "npc" && token.kind == "npc") {
-    return token.npcName == stand.npc.name;
-  }
-  return false;
-}
-
 function ClueFooter({ stand }: { stand: Stand }) {
   const [clue] = useClueContext();
   const tokenNumbers = [];
@@ -145,8 +159,16 @@ function ClueFooter({ stand }: { stand: Stand }) {
   );
 }
 
-function ConnectionTag({ player }: { player: Player }) {
+function ConnectionTag({ stand }: { stand: Stand }) {
   const currentPlayerName = React.useContext(PlayerNameContext);
+  if (stand.kind == "npc") {
+    return (
+      <Tag title="Non-player character">
+        <Symbol name="smart_toy" />
+      </Tag>
+    );
+  }
+  const player = stand.player;
   if (player.name == currentPlayerName) {
     return (
       <Tag className="is-primary">
@@ -168,8 +190,22 @@ function ConnectionTag({ player }: { player: Player }) {
   );
 }
 
-function ClickableLetter({ stand }: { stand: Stand }) {
+function StandLetter({ stand }: { stand: Stand }) {
+  const game = React.useContext(GameContext);
+  const currentPlayerName = React.useContext(PlayerNameContext);
   const [, clueDispatch] = useClueContext();
+
+  const letter = <Letter letter={standLetter(stand)} />;
+  if (game.phase.name != "clue") {
+    return letter;
+  }
+  if (game.phase.clueGiver != currentPlayerName) {
+    return letter;
+  }
+  if (stand.kind == "player" && stand.player.name == currentPlayerName) {
+    // Can't add yourself to a clue.
+    return letter;
+  }
   const token = (): Token => {
     switch (stand.kind) {
       case "player":
@@ -185,61 +221,26 @@ function ClickableLetter({ stand }: { stand: Stand }) {
         clueDispatch({ type: "add", token: token() });
       }}
     >
-      <Letter letter={standLetter(stand)} />
+      {letter}
     </motion.a>
   );
 }
 
-export function PlayerElement({ player }: { player: Player }) {
+export function StandElement({ stand }: { stand: Stand }) {
   const game = React.useContext(GameContext);
-  const currentPlayerName = React.useContext(PlayerNameContext);
-  const isClueGiver =
-    game.phase.name == "clue" && game.phase.clueGiver == currentPlayerName;
-  const stand: PlayerStand = { kind: "player", player };
   return (
     <div className="player card">
       <header className="card-header">
         <div className="card-header-title">
-          <span>{player.name}&nbsp;</span>
-          <ConnectionTag player={player} />
+          <span>{standName(stand)}&nbsp;</span>
+          <ConnectionTag stand={stand} />
         </div>
       </header>
       <div className="card-content">
-        {isClueGiver && player.name != currentPlayerName ? (
-          <ClickableLetter stand={stand} />
-        ) : (
-          <Letter letter={player.letter} />
-        )}
+        <StandLetter stand={stand} />
       </div>
-      {game.phase.name == "vote" && <VoteFooter player={player} />}
+      {game.phase.name == "vote" && <VoteFooter stand={stand} />}
       {game.phase.name == "clue" && <ClueFooter stand={stand} />}
-    </div>
-  );
-}
-
-export function NpcElement({ npc }: { npc: Npc }) {
-  const game = React.useContext(GameContext);
-  const currentPlayerName = React.useContext(PlayerNameContext);
-  const isClueGiver =
-    game.phase.name == "clue" && game.phase.clueGiver == currentPlayerName;
-  return (
-    <div className="player card">
-      <header className="card-header">
-        <div className="card-header-title">
-          <span>{npc.name}&nbsp;</span>
-          <Tag title="Non-player character">
-            <Symbol name="smart_toy" />
-          </Tag>
-        </div>
-      </header>
-      <div className="card-content">
-        {isClueGiver ? (
-          <ClickableLetter stand={{ kind: "npc", npc }} />
-        ) : (
-          <Letter letter={npc.letter} />
-        )}
-      </div>
-      {game.phase.name == "clue" && <ClueFooter stand={{ kind: "npc", npc }} />}
     </div>
   );
 }
@@ -249,10 +250,10 @@ export function Players() {
   return (
     <section className="section players">
       {game.players.map((player) => (
-        <PlayerElement key={player.name} player={player} />
+        <StandElement key={player.name} stand={{ kind: "player", player }} />
       ))}
       {game.npcs.map((npc) => (
-        <NpcElement key={npc.name} npc={npc} />
+        <StandElement key={npc.name} stand={{ kind: "npc", npc }} />
       ))}
     </section>
   );
