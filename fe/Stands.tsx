@@ -57,7 +57,11 @@ interface NpcStand {
   npc: Npc;
 }
 
-type Stand = PlayerStand | NpcStand;
+interface WildStand {
+  kind: "wild";
+}
+
+type Stand = PlayerStand | NpcStand | WildStand;
 
 function standName(stand: Stand) {
   switch (stand.kind) {
@@ -65,6 +69,8 @@ function standName(stand: Stand) {
       return stand.player.name;
     case "npc":
       return stand.npc.name;
+    case "wild":
+      return "wild";
   }
 }
 
@@ -74,6 +80,8 @@ function standLetter(stand: Stand) {
       return stand.player.letter;
     case "npc":
       return stand.npc.letter;
+    case "wild":
+      return "*";
   }
 }
 
@@ -84,7 +92,7 @@ function tokenMatchesStand(token: Token, stand: Stand) {
   if (stand.kind == "npc" && token.kind == "npc") {
     return token.npcName == stand.npc.name;
   }
-  return false;
+  return stand.kind == "wild" && token.kind == "wild";
 }
 
 function VoteFooter({ stand }: { stand: Stand }) {
@@ -161,7 +169,7 @@ function ClueFooter({ stand }: { stand: Stand }) {
 
 function ConnectionTag({ stand }: { stand: Stand }) {
   const currentPlayerName = React.useContext(PlayerNameContext);
-  if (stand.kind == "npc") {
+  if (stand.kind == "npc" || stand.kind == "wild") {
     return (
       <Tag title="Non-player character">
         <Symbol name="smart_toy" />
@@ -212,6 +220,8 @@ function StandLetter({ stand }: { stand: Stand }) {
         return { kind: "player", playerName: stand.player.name };
       case "npc":
         return { kind: "npc", npcName: stand.npc.name };
+      case "wild":
+        return { kind: "wild" };
     }
   };
   return (
@@ -255,6 +265,7 @@ export default function Stands() {
       {game.npcs.map((npc) => (
         <StandElement key={npc.name} stand={{ kind: "npc", npc }} />
       ))}
+      <StandElement stand={{ kind: "wild" }} />
     </section>
   );
 }
