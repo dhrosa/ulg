@@ -4,7 +4,7 @@ import useWebSocket, { ReadyState } from "react-use-websocket";
 import { Field, Label, Control, SubmitButton } from "./Form";
 import { toast } from "react-toastify";
 import { useLocalStorage } from "react-use";
-import { Game, GameData, GameContext, PlayerNameContext, Token } from "./Game";
+import { Game, GameData, GameContext, PlayerNameContext } from "./Game";
 import ClueCandidateEditor from "./ClueCandidateEditor";
 import Stands from "./Stands";
 import { ClueContextProvider, useClueContext } from "./ClueContext";
@@ -164,21 +164,11 @@ function ClueEditor() {
   if (game.phase.clueGiver != playerName) {
     return false;
   }
-  const tokenLetter = (token: Token) => {
-    switch (token.kind) {
-      case "player":
-        return game.player(token.playerName).letter;
-      case "npc":
-        return game.npc(token.npcName).letter;
-      case "wild":
-        return "*";
-    }
-  };
   const submit = async () => {
     const response = await fetch(`${game.url}/clue`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tokens: clue }),
+      body: JSON.stringify(clue),
     });
     if (!response.ok) {
       toast.error("Failed to submit clue.");
@@ -193,7 +183,7 @@ function ClueEditor() {
         <div className="panel-block">
           <div className="clue">
             {clue.map((token, i) => (
-              <Letter key={i} letter={tokenLetter(token)} />
+              <Letter key={i} letter={game.tokenLetter(token)} />
             ))}
           </div>
         </div>
@@ -209,6 +199,31 @@ function ClueEditor() {
           >
             Reset
           </button>
+        </div>
+      </nav>
+    </section>
+  );
+}
+
+function GuessWidget() {
+  const game = React.useContext(GameContext);
+  if (game.phase.name != "guess") {
+    return false;
+  }
+  return (
+    <section className="section">
+      <nav className="panel">
+        <p className="panel-heading">Clue</p>
+        <div className="panel-block">
+          <div className="clue">
+            {game.phase.clue.map((token, i) => (
+              <Letter key={i} letter={game.tokenLetter(token)} />
+            ))}
+          </div>
+        </div>
+        <div className="panel-block">
+          <button className="button">Move On</button>
+          <button className="button">Stay</button>
         </div>
       </nav>
     </section>
@@ -238,6 +253,7 @@ function LoggedInPage() {
           <StartGameButton />
           <ClueCandidateEditor />
           <ClueEditor />
+          <GuessWidget />
           <DebugInfo />
         </div>
       </ClueContextProvider>

@@ -34,7 +34,8 @@ export type Token =
 export type Phase =
   | { name: "lobby" }
   | { name: "vote" }
-  | { name: "clue"; clueGiver: string };
+  | { name: "clue"; clueGiver: string }
+  | { name: "guess"; clue: Token[] };
 
 export interface GameData {
   id: string;
@@ -70,6 +71,17 @@ export class Game implements GameData {
 
   npc(name: string): Npc {
     return this.npcs.find((n) => n.name === name) as Npc;
+  }
+
+  tokenLetter(token: Token): string {
+    switch (token.kind) {
+      case "player":
+        return this.player(token.playerName).letter;
+      case "npc":
+        return this.npc(token.npcName).letter;
+      case "wild":
+        return "*";
+    }
   }
 }
 

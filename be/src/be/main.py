@@ -60,8 +60,7 @@ Token: TypeAlias = Annotated[
 ]
 
 
-class Clue(CamelModel):
-    tokens: list[Token]
+Clue = list[Token]
 
 
 class PlayerData(CamelModel):
