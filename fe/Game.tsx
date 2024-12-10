@@ -26,36 +26,15 @@ export interface Npc {
   deckSize: number;
 }
 
-interface LobbyPhase {
-  name: "lobby";
-}
+export type Token =
+  | { kind: "player"; playerName: string }
+  | { kind: "npc"; npcName: string }
+  | { kind: "wild" };
 
-interface VotePhase {
-  name: "vote";
-}
-
-interface TokenOnPlayer {
-  kind: "player";
-  playerName: string;
-}
-
-interface TokenOnNpc {
-  kind: "npc";
-  npcName: string;
-}
-
-interface TokenOnWild {
-  kind: "wild";
-}
-
-export type Token = TokenOnPlayer | TokenOnNpc | TokenOnWild;
-
-interface CluePhase {
-  name: "clue";
-  clueGiver: string;
-}
-
-type Phase = LobbyPhase | VotePhase | CluePhase;
+export type Phase =
+  | { name: "lobby" }
+  | { name: "vote" }
+  | { name: "clue"; clueGiver: string };
 
 export interface GameData {
   id: string;
