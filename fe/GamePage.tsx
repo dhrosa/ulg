@@ -67,34 +67,6 @@ interface ApiError {
   detail: string;
 }
 
-function StartGameButton() {
-  const game = React.useContext(GameContext);
-  if (game.phase.name != "lobby") {
-    return false;
-  }
-  const onClick = async () => {
-    const response = await fetch(`${game.url}/start`, { method: "POST" });
-    if (response.ok) {
-      toast.success("Game started!");
-      return;
-    }
-    const error = (await response.json()) as ApiError;
-    if (response.status === 409) {
-      toast.error(`Could not start game: ${error.detail}`);
-      return;
-    }
-  };
-  return (
-    <SubmitButton
-      className="is-fullwidth is-large"
-      disabled={game.players.length < 2}
-      onClick={onClick}
-    >
-      Start Game
-    </SubmitButton>
-  );
-}
-
 function DebugInfo() {
   const game = React.useContext(GameContext);
   return (
@@ -218,7 +190,7 @@ function LoggedInPage() {
         <div className="game-page container is-fluid">
           <GameInfo connectionStatus={readyStateName(readyState)} />
           <Stands />
-          <StartGameButton />
+          <LobbySection />
           <ClueCandidateEditor />
           <ClueEditor />
           <GuessWidget />
@@ -226,6 +198,43 @@ function LoggedInPage() {
         </div>
       </ClueContextProvider>
     </GameContext.Provider>
+  );
+}
+
+function LobbySection() {
+  const game = React.useContext(GameContext);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  const [error, action, pending] = React.useActionState(async () => {
+    const response = await fetch(`${game.url}/start`, { method: "POST" });
+    if (response.ok) {
+      return null;
+    }
+    const error = (await response.json()) as ApiError;
+    return `Could not start game: ${error.detail}`;
+  }, null);
+  if (game.phase.name != "lobby") {
+    return false;
+  }
+  const enoughPlayers = game.players.length >= 2;
+  return (
+    <section className="section">
+      <h1 className="title">Lobby Phase</h1>
+      {enoughPlayers ? (
+        <p>You can start the game now, or wait for more players to join.</p>
+      ) : (
+        <p>Need more players to join before starting the game.</p>
+      )}
+
+      <form action={action}>
+        <SubmitButton
+          className={pending ? "is-loading" : ""}
+          disabled={!enoughPlayers}
+        >
+          Start Game
+        </SubmitButton>
+        {error && <p className="help is-danger">{error}</p>}
+      </form>
+    </section>
   );
 }
 
