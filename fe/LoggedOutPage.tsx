@@ -1,7 +1,6 @@
 import React from "react";
 import { useLocalStorage } from "react-use";
 import { GameContext } from "./Game";
-import { toast } from "react-toastify";
 import { Field, Label, Control, SubmitButton } from "./Form";
 
 export default function LoggedOutPage({
@@ -11,32 +10,26 @@ export default function LoggedOutPage({
 }) {
   const game = React.useContext(GameContext);
   const [savedName, setSavedName] = useLocalStorage<string>("playerName");
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const name = data.get("name") as string;
-    (async () => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  const [error, action, pending] = React.useActionState(
+    async (_previousError: string | null, formData: FormData) => {
+      const name = formData.get("name") as string;
       const response = await fetch(game.playerUrl(name), {
         method: "POST",
         body: "{}",
       });
-      if (response.ok) {
-        toast("Joining as new player.");
-      } else if (response.status === 409) {
-        toast("Joining as existing player.");
-      } else {
-        toast("Failed to join game.");
-        console.error(response);
-        return;
+      if (response.ok || response.status === 409) {
+        setSavedName(name);
+        setPlayerName(name);
+        return null;
       }
-      setSavedName(name);
-      setPlayerName(name);
-    })().catch((error: unknown) => {
-      console.error(error);
-    });
-  };
+      console.error(response);
+      return "Failed to join game.";
+    },
+    null
+  );
   return (
-    <form className="form" onSubmit={onSubmit}>
+    <form className="form" action={action}>
       <Field>
         <Label>Player name</Label>
         <Control>
@@ -48,8 +41,9 @@ export default function LoggedOutPage({
             autoFocus
           />
         </Control>
+        {error && <p className="help is-danger">{error}</p>}
       </Field>
-      <SubmitButton>Join Game</SubmitButton>
+      <SubmitButton disabled={pending}>Join Game</SubmitButton>
     </form>
   );
 }
