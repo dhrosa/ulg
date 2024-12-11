@@ -191,6 +191,9 @@ function StandLetter({ stand }: { stand: Stand }) {
   const currentPlayerName = React.useContext(PlayerNameContext);
   const [, clueDispatch] = useClueContext();
 
+  if (stand.kind == "player" && stand.player.name == currentPlayerName) {
+    return <Letter letter="_" />;
+  }
   const letter = <Letter letter={standLetter(stand)} />;
   if (game.phase.name != "clue") {
     return letter;

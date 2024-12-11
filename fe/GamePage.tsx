@@ -209,6 +209,7 @@ function ClueEditor() {
 function GuessWidget() {
   const game = React.useContext(GameContext);
   const [clue, clueDispatch] = useClueContext();
+  const currentPlayerName = React.useContext(PlayerNameContext);
   if (game.phase.name != "guess") {
     return false;
   }
@@ -225,7 +226,14 @@ function GuessWidget() {
           <div className="clue">
             {clue.map((token, i) => (
               <div key={i}>
-                <Letter letter={game.tokenLetter(token)} />
+                <Letter
+                  letter={
+                    token.kind == "player" &&
+                    token.playerName == currentPlayerName
+                      ? "_"
+                      : game.tokenLetter(token)
+                  }
+                />
                 <NumberToken n={i + 1} />
               </div>
             ))}
