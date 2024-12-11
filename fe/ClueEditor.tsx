@@ -1,7 +1,7 @@
 import React from "react";
 import { useClueContext } from "./ClueContext";
 import { GameContext } from "./Game";
-import Letter from "./Letter";
+import ClueElement from "./ClueElement";
 import { toast } from "react-toastify";
 
 export default function ClueEditor() {
@@ -25,12 +25,7 @@ export default function ClueEditor() {
   }
   return (
     <>
-      <div className="clue">
-        {clue.map((token, i) => (
-          <Letter key={i} letter={game.tokenLetter(token)} />
-        ))}
-      </div>
-
+      <ClueElement />
       <button
         className={"button is-primary " + (pending ? "is-loading" : "")}
         onClick={() => {

@@ -5,8 +5,7 @@ import { Game, GameData, GameContext, PlayerNameContext } from "./Game";
 import ClueCandidateEditor from "./ClueCandidateEditor";
 import Stands from "./Stands";
 import { ClueContextProvider, useClueContext } from "./ClueContext";
-import Letter from "./Letter";
-import NumberToken from "./NumberToken";
+import ClueElement from "./ClueElement";
 import LoggedOutPage from "./LoggedOutPage";
 import { SubmitButton } from "./Form";
 import ClueEditor from "./ClueEditor";
@@ -207,7 +206,7 @@ function CluePhaseSection() {
 
 function GuessPhaseSection() {
   const game = React.useContext(GameContext);
-  const [clue, clueDispatch] = useClueContext();
+  const [, clueDispatch] = useClueContext();
   const currentPlayerName = React.useContext(PlayerNameContext);
   React.useEffect(() => {
     if (game.phase.name == "guess") {
@@ -244,21 +243,7 @@ function GuessPhaseSection() {
         )}
       </div>
       <div className="box">
-        <div className="clue">
-          {clue.map((token, i) => (
-            <div key={i}>
-              <Letter
-                letter={
-                  token.kind == "player" &&
-                  token.playerName == currentPlayerName
-                    ? "_"
-                    : game.tokenLetter(token)
-                }
-              />
-              <NumberToken n={i + 1} />
-            </div>
-          ))}
-        </div>
+        <ClueElement />
       </div>
       <div className="block">
         <button className="button">Move on</button>
