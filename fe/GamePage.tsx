@@ -77,48 +77,6 @@ function DebugInfo() {
   );
 }
 
-function GuessWidget() {
-  const game = React.useContext(GameContext);
-  const [clue, clueDispatch] = useClueContext();
-  const currentPlayerName = React.useContext(PlayerNameContext);
-  if (game.phase.name != "guess") {
-    return false;
-  }
-  React.useEffect(() => {
-    if (game.phase.name == "guess") {
-      clueDispatch({ type: "set", tokens: game.phase.clue });
-    }
-  }, [game]);
-  return (
-    <section className="section">
-      <nav className="panel">
-        <p className="panel-heading">Clue</p>
-        <div className="panel-block">
-          <div className="clue">
-            {clue.map((token, i) => (
-              <div key={i}>
-                <Letter
-                  letter={
-                    token.kind == "player" &&
-                    token.playerName == currentPlayerName
-                      ? "_"
-                      : game.tokenLetter(token)
-                  }
-                />
-                <NumberToken n={i + 1} />
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="panel-block">
-          <button className="button">Move On</button>
-          <button className="button">Stay</button>
-        </div>
-      </nav>
-    </section>
-  );
-}
-
 function LoggedInPage() {
   const initialGame = React.useContext(GameContext);
   const playerName = React.useContext(PlayerNameContext);
@@ -142,7 +100,7 @@ function LoggedInPage() {
           <LobbyPhaseSection />
           <VotePhaseSection />
           <CluePhaseSection />
-          <GuessWidget />
+          <GuessPhaseSection />
           <DebugInfo />
         </div>
       </ClueContextProvider>
@@ -243,6 +201,69 @@ function CluePhaseSection() {
           their clue.
         </p>
       )}
+    </section>
+  );
+}
+
+function GuessPhaseSection() {
+  const game = React.useContext(GameContext);
+  const [clue, clueDispatch] = useClueContext();
+  const currentPlayerName = React.useContext(PlayerNameContext);
+  React.useEffect(() => {
+    if (game.phase.name == "guess") {
+      clueDispatch({ type: "set", tokens: game.phase.clue });
+    }
+  }, [game]);
+
+  if (game.phase.name != "guess") {
+    return false;
+  }
+
+  let playerInClue = false;
+  for (const token of game.phase.clue) {
+    if (token.kind == "player" && token.playerName == currentPlayerName) {
+      playerInClue = true;
+      break;
+    }
+  }
+
+  return (
+    <section className="section">
+      <h1 className="title">Guess Phase</h1>
+      <div className="block">
+        {playerInClue ? (
+          <p>
+            You are not a part of the current clue. Waiting for other players to
+            decide whether they will stay on their current letter or move on.
+          </p>
+        ) : (
+          <p>
+            Given the clue below, decide whether you will stay on your current
+            letter or move on.
+          </p>
+        )}
+      </div>
+      <div className="box">
+        <div className="clue">
+          {clue.map((token, i) => (
+            <div key={i}>
+              <Letter
+                letter={
+                  token.kind == "player" &&
+                  token.playerName == currentPlayerName
+                    ? "_"
+                    : game.tokenLetter(token)
+                }
+              />
+              <NumberToken n={i + 1} />
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="block">
+        <button className="button">Move on</button>
+        <button className="button">Stay</button>
+      </div>
     </section>
   );
 }
