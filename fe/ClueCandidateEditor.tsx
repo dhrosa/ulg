@@ -107,68 +107,61 @@ export default function ClueCandidateEditor() {
   };
 
   return (
-    <section className="section">
-      <nav className="panel clue-candidate-editor">
-        <p className="panel-heading">Clue Candidate</p>
-        <div className="panel-block">
-          <form className="form" onSubmit={onSubmit}>
-            <Field>
-              <Label>Length</Label>
-              <Control>
-                <Input
-                  type="number"
-                  name="length"
-                  min={1}
-                  max={99}
-                  defaultValue={candidate?.length ?? 1}
-                />
-              </Control>
-            </Field>
+    <form className="form clue-candidate-editor" onSubmit={onSubmit}>
+      <Field>
+        <Label>Length</Label>
+        <Control>
+          <Input
+            type="number"
+            name="length"
+            min={1}
+            max={99}
+            defaultValue={candidate?.length ?? 1}
+          />
+        </Control>
+      </Field>
 
-            <Field>
-              <Label>Players</Label>
-              <Control>
-                <NumberButtonChoices
-                  name="players"
-                  minValue={0}
-                  maxValue={game.players.length - 1}
-                  defaultValue={candidate?.playerCount ?? 0}
-                />
-              </Control>
-            </Field>
+      <Field>
+        <Label>Players</Label>
+        <Control>
+          <NumberButtonChoices
+            name="players"
+            minValue={0}
+            maxValue={game.players.length - 1}
+            defaultValue={candidate?.playerCount ?? 0}
+          />
+        </Control>
+      </Field>
 
-            <Field>
-              <Label>NPCs</Label>
-              <Control>
-                <NumberButtonChoices
-                  name="npcs"
-                  minValue={0}
-                  maxValue={game.npcs.length}
-                  defaultValue={candidate?.npcCount ?? 0}
-                />
-              </Control>
-            </Field>
+      <Field>
+        <Label>NPCs</Label>
+        <Control>
+          <NumberButtonChoices
+            name="npcs"
+            minValue={0}
+            maxValue={game.npcs.length}
+            defaultValue={candidate?.npcCount ?? 0}
+          />
+        </Control>
+      </Field>
 
-            <Field>
-              <Label>Wild</Label>
-              <Control>
-                <ButtonChoices
-                  name="wild"
-                  values={["Yes", "No"]}
-                  defaultValue={candidate?.wild ? "Yes" : "No"}
-                />
-              </Control>
-            </Field>
+      <Field>
+        <Label>Wild</Label>
+        <Control>
+          <ButtonChoices
+            name="wild"
+            values={["Yes", "No"]}
+            defaultValue={candidate?.wild ? "Yes" : "No"}
+          />
+        </Control>
+      </Field>
 
-            <SubmitButton>Propose</SubmitButton>
-            {candidate && (
-              <button className="button" onClick={deleteCandidate}>
-                Retract
-              </button>
-            )}
-          </form>
-        </div>
-      </nav>
-    </section>
+      <SubmitButton>Propose</SubmitButton>
+      {candidate && (
+        <button className="button" onClick={deleteCandidate}>
+          Retract
+        </button>
+      )}
+    </form>
   );
 }

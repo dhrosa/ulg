@@ -98,17 +98,16 @@ main {
 
 .button-choices {
   display: flex;
-  justify-content: space-evenly;
+  justify-content: start;
+  gap: 0.5em;
 }
 
 .clue-candidate-editor {
-  form {
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
 
-    label {
-      @extend .has-text-centered;
-    }
+  label {
+    @extend .has-text-centered;
   }
 }

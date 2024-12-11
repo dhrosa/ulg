@@ -190,8 +190,8 @@ function LoggedInPage() {
         <div className="game-page container is-fluid">
           <GameInfo connectionStatus={readyStateName(readyState)} />
           <Stands />
-          <LobbySection />
-          <ClueCandidateEditor />
+          <LobbyPhaseSection />
+          <VotePhaseSection />
           <ClueEditor />
           <GuessWidget />
           <DebugInfo />
@@ -201,7 +201,7 @@ function LoggedInPage() {
   );
 }
 
-function LobbySection() {
+function LobbyPhaseSection() {
   const game = React.useContext(GameContext);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   const [error, action, pending] = React.useActionState(async () => {
@@ -234,6 +234,33 @@ function LobbySection() {
         </SubmitButton>
         {error && <p className="help is-danger">{error}</p>}
       </form>
+    </section>
+  );
+}
+
+function VotePhaseSection() {
+  const game = React.useContext(GameContext);
+  if (game.phase.name != "vote") {
+    return false;
+  }
+  return (
+    <section className="section vote-phase">
+      <h1 className="title">Vote Phase</h1>
+      <div className="block">
+        <p>
+          Vote for which player will be the clue giver based on their proposed
+          clue candidates.
+        </p>
+        <p>
+          The game proceeds to the Clue Phase when the majority players have
+          voted for one player.
+        </p>
+        <p>Propose your own clue candidate below.</p>
+      </div>
+      <div className="box">
+        <h2 className="subtitle">Clue Candidate</h2>
+        <ClueCandidateEditor />
+      </div>
     </section>
   );
 }
