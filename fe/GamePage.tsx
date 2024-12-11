@@ -1,7 +1,6 @@
 import { useParams } from "react-router-dom";
 import React from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
-import { toast } from "react-toastify";
 import { Game, GameData, GameContext, PlayerNameContext } from "./Game";
 import ClueCandidateEditor from "./ClueCandidateEditor";
 import Stands from "./Stands";
@@ -10,6 +9,7 @@ import Letter from "./Letter";
 import NumberToken from "./NumberToken";
 import LoggedOutPage from "./LoggedOutPage";
 import { SubmitButton } from "./Form";
+import ClueEditor from "./ClueEditor";
 
 function readyStateName(readyState: ReadyState) {
   switch (readyState) {
@@ -73,57 +73,6 @@ function DebugInfo() {
     <section className="section">
       <h3>Live Game Data</h3>
       <pre>{JSON.stringify(game, null, 2)}</pre>
-    </section>
-  );
-}
-
-function ClueEditor() {
-  const game = React.useContext(GameContext);
-  const playerName = React.useContext(PlayerNameContext);
-  const [clue, clueDispatch] = useClueContext();
-  if (game.phase.name != "clue") {
-    return false;
-  }
-  if (game.phase.clueGiver != playerName) {
-    return false;
-  }
-  const submit = async () => {
-    const response = await fetch(`${game.url}/clue`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(clue),
-    });
-    if (!response.ok) {
-      toast.error("Failed to submit clue.");
-      console.error(response);
-      return;
-    }
-  };
-  return (
-    <section className="section">
-      <nav className="panel clue-editor">
-        <p className="panel-heading">Clue Editor</p>
-        <div className="panel-block">
-          <div className="clue">
-            {clue.map((token, i) => (
-              <Letter key={i} letter={game.tokenLetter(token)} />
-            ))}
-          </div>
-        </div>
-        <div className="panel-block">
-          <button className="button is-primary" onClick={submit}>
-            Submit
-          </button>
-          <button
-            className="button"
-            onClick={() => {
-              clueDispatch({ type: "clear" });
-            }}
-          >
-            Reset
-          </button>
-        </div>
-      </nav>
     </section>
   );
 }
@@ -192,7 +141,7 @@ function LoggedInPage() {
           <Stands />
           <LobbyPhaseSection />
           <VotePhaseSection />
-          <ClueEditor />
+          <CluePhaseSection />
           <GuessWidget />
           <DebugInfo />
         </div>
@@ -261,6 +210,39 @@ function VotePhaseSection() {
         <h2 className="subtitle">Clue Candidate</h2>
         <ClueCandidateEditor />
       </div>
+    </section>
+  );
+}
+
+function CluePhaseSection() {
+  const game = React.useContext(GameContext);
+  const playerName = React.useContext(PlayerNameContext);
+  if (game.phase.name != "clue") {
+    return false;
+  }
+  const isClueGiver = game.phase.clueGiver === playerName;
+  return (
+    <section className="section">
+      <h1 className="title">Clue Phase</h1>
+      {isClueGiver ? (
+        <>
+          <div className="block">
+            <p>
+              You are the clue giver. Click on player letters above to spell out
+              your clue.
+            </p>
+          </div>
+          <div className="box">
+            <h2 className="subtitle">Clue Editor</h2>
+            <ClueEditor />
+          </div>
+        </>
+      ) : (
+        <p>
+          Waiting for player <strong>{game.phase.clueGiver}</strong> to present
+          their clue.
+        </p>
+      )}
     </section>
   );
 }
