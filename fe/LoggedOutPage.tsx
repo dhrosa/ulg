@@ -3,7 +3,7 @@ import { useLocalStorage } from "react-use";
 import { GameContext } from "./Game";
 import { Field, Label, Control, SubmitButton } from "./Form";
 
-export default function LoggedOutPage({
+function LobbyForm({
   setPlayerName,
 }: {
   setPlayerName: (name: string) => void;
@@ -46,4 +46,42 @@ export default function LoggedOutPage({
       <SubmitButton disabled={pending}>Join Game</SubmitButton>
     </form>
   );
+}
+
+function InProgressForm({
+  setPlayerName,
+}: {
+  setPlayerName: (name: string) => void;
+}) {
+  const game = React.useContext(GameContext);
+
+  return (
+    <div>
+      <p>Join game as:</p>
+      {game.players.map((p) => (
+        <button
+          key={p.name}
+          className="button"
+          disabled={p.connected}
+          onClick={() => {
+            setPlayerName(p.name);
+          }}
+        >
+          {p.name}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export default function LoggedOutPage({
+  setPlayerName,
+}: {
+  setPlayerName: (name: string) => void;
+}) {
+  const game = React.useContext(GameContext);
+  if (game.phase.name == "lobby") {
+    return <LobbyForm setPlayerName={setPlayerName} />;
+  }
+  return <InProgressForm setPlayerName={setPlayerName} />;
 }
