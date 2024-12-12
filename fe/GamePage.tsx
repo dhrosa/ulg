@@ -6,6 +6,8 @@ import Stands from "./Stands";
 import { ClueContextProvider } from "./ClueContext";
 import LoggedOutPage from "./LoggedOutPage";
 import PhaseSection from "./PhaseSection";
+import Symbol from "./Symbol";
+import { useCopyToClipboard } from "react-use";
 
 function readyStateName(readyState: ReadyState) {
   switch (readyState) {
@@ -38,8 +40,25 @@ function LoadedPage() {
 
 function GameInfo({ connectionStatus }: { connectionStatus: string }) {
   const game = React.useContext(GameContext);
+
+  const [, copyToClipboard] = useCopyToClipboard();
+
   const items = {
-    "Game ID": game.id,
+    "Game ID": (
+      <>
+        {game.id}
+        &nbsp;
+        <button
+          className="button is-small"
+          title="Copy link"
+          onClick={() => {
+            copyToClipboard(window.location.href);
+          }}
+        >
+          <Symbol name="content_copy" />
+        </button>
+      </>
+    ),
     "Connection Status": connectionStatus,
     Phase: game.phase.name,
     Players: game.players.length,
