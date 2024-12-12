@@ -191,7 +191,7 @@ function ConnectionTag() {
   const player = stand.player;
   if (player.name == currentPlayerName) {
     return (
-      <Tag className="is-primary">
+      <Tag className="is-primary" title="This is you.">
         <Symbol name="star" />
       </Tag>
     );
