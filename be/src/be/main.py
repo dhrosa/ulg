@@ -60,7 +60,9 @@ Token: TypeAlias = Annotated[
 ]
 
 
-Clue = list[Token]
+Clue: TypeAlias = list[Token]
+
+GuessState: TypeAlias = Literal["move_on", "stay", ""]
 
 
 class PlayerData(CamelModel):
@@ -70,6 +72,7 @@ class PlayerData(CamelModel):
     vote: str = ""
     letter: str = "?"
     deck_size: int = 0
+    guess_state: GuessState = ""
 
 
 class NpcData(CamelModel):
@@ -102,6 +105,7 @@ class Player:
         self.vote = ""
         self.secret_word: str = ""
         self.secret_deck = list[str]()
+        self.guess_state: GuessState = ""
 
     @property
     def data(self) -> PlayerData:
@@ -111,6 +115,7 @@ class Player:
             clue_candidate=self.clue_candidate,
             vote=self.vote,
             letter=self.letter,
+            guess_state=self.guess_state,
         )
 
 
@@ -207,6 +212,26 @@ class Game:
     def start(self) -> None:
         self._deal_secret_words()
         self._add_npcs()
+        self.phase = VotePhase()
+
+    def maybe_finish_guess_phase(self) -> None:
+        assert isinstance(self.phase, GuessPhase)
+        undecided_player_names = set[str]()
+        for token in self.phase.clue:
+            if isinstance(token, TokenOnPlayer):
+                undecided_player_names.add(token.player_name)
+
+        for player in self.players.values():
+            if player.guess_state:
+                undecided_player_names.discard(player.name)
+
+        if undecided_player_names:
+            return
+
+        # Next round
+        for player in self.players.values():
+            player.guess_state = ""
+            player.vote = ""
         self.phase = VotePhase()
 
 
@@ -339,4 +364,20 @@ async def game_set_clue(game_id: str, clue: Clue) -> None:
     if not isinstance(game.phase, CluePhase):
         raise HTTPException(status_code=409, detail="Game is not in clue phase")
     game.phase = GuessPhase(clue=clue)
+    await game.broadcast()
+
+
+class GuessStateRequest(CamelModel):
+    guess_state: GuessState
+
+
+@app.put("/game/{game_id}/player/{name}/guess_state")
+async def player_set_guess_state(
+    game_id: str, name: str, request: GuessStateRequest
+) -> None:
+    game, player = game_and_player_or_404(game_id, name)
+    if not isinstance(game.phase, GuessPhase):
+        raise HTTPException(status_code=409, detail="Game is not in guess phase")
+    player.guess_state = request.guess_state
+    game.maybe_finish_guess_phase()
     await game.broadcast()
