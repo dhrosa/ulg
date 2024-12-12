@@ -1,7 +1,13 @@
 import { useParams } from "react-router-dom";
 import React from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
-import { Game, GameData, GameContext, PlayerNameContext } from "./Game";
+import {
+  Game,
+  GameData,
+  GameContext,
+  PlayerNameContext,
+  GuessState,
+} from "./Game";
 import ClueCandidateEditor from "./ClueCandidateEditor";
 import Stands from "./Stands";
 import { ClueContextProvider, useClueContext } from "./ClueContext";
@@ -208,6 +214,7 @@ function GuessPhaseSection() {
   const game = React.useContext(GameContext);
   const [, clueDispatch] = useClueContext();
   const currentPlayerName = React.useContext(PlayerNameContext);
+  const [error, setError] = React.useState<string | null>(null);
   React.useEffect(() => {
     if (game.phase.name == "guess") {
       clueDispatch({ type: "set", tokens: game.phase.clue });
@@ -226,29 +233,63 @@ function GuessPhaseSection() {
     }
   }
 
+  const setGuessState = async (guessState: GuessState) => {
+    const response = await fetch(
+      `${game.playerUrl(currentPlayerName)}/guess_state`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guessState }),
+      }
+    );
+    if (response.ok) {
+      return;
+    }
+    setError("Could not submit guess decision.");
+    console.error(response);
+  };
+
   return (
     <section className="section">
       <h1 className="title">Guess Phase</h1>
       <div className="block">
         {playerInClue ? (
           <p>
-            You are not a part of the current clue. Waiting for other players to
-            decide whether they will stay on their current letter or move on.
+            Given the clue below, decide whether you will stay on your current
+            letter or move on.
           </p>
         ) : (
           <p>
-            Given the clue below, decide whether you will stay on your current
-            letter or move on.
+            You are not a part of the current clue. Waiting for other players to
+            decide whether they will stay on their current letter or move on.
           </p>
         )}
       </div>
       <div className="box">
+        <h2 className="subtitle">Clue</h2>
         <ClueElement />
       </div>
-      <div className="block">
-        <button className="button">Move on</button>
-        <button className="button">Stay</button>
-      </div>
+      {playerInClue && (
+        <div className="block">
+          <button
+            className="button"
+            onClick={async () => {
+              await setGuessState("move_on");
+            }}
+          >
+            Move on
+          </button>
+          <button
+            className="button"
+            onClick={async () => {
+              await setGuessState("stay");
+            }}
+          >
+            Stay
+          </button>
+          {error && <p className="help is-danger">{error}</p>}
+        </div>
+      )}
     </section>
   );
 }

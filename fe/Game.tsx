@@ -11,6 +11,8 @@ export interface ClueCandidate {
   wild: boolean;
 }
 
+export type GuessState = "move_on" | "stay" | "";
+
 export interface Player {
   name: string;
   connected: boolean;
@@ -18,6 +20,7 @@ export interface Player {
   deckSize: number;
   clueCandidate?: ClueCandidate;
   vote: string;
+  guessState: GuessState;
 }
 
 export interface Npc {

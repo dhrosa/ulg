@@ -364,6 +364,8 @@ async def game_set_clue(game_id: str, clue: Clue) -> None:
     if not isinstance(game.phase, CluePhase):
         raise HTTPException(status_code=409, detail="Game is not in clue phase")
     game.phase = GuessPhase(clue=clue)
+    # Instant transition is possible if no players are in the clue
+    game.maybe_finish_guess_phase()
     await game.broadcast()
 
 
