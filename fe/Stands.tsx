@@ -67,6 +67,8 @@ type Stand =
   | { kind: "npc"; npc: Npc }
   | { kind: "wild" };
 
+const StandContext = React.createContext<Stand>({} as Stand);
+
 function standName(stand: Stand) {
   switch (stand.kind) {
     case "player":
@@ -99,10 +101,11 @@ function tokenMatchesStand(token: Token, stand: Stand) {
   return stand.kind == "wild" && token.kind == "wild";
 }
 
-function VoteFooter({ stand }: { stand: Stand }) {
+function VoteFooter() {
   const game = React.useContext(GameContext);
   const currentPlayerName = React.useContext(PlayerNameContext);
   const currentPlayer = game.player(currentPlayerName);
+  const stand = React.useContext(StandContext);
 
   if (stand.kind != "player") {
     return false;
@@ -152,8 +155,9 @@ function VoteFooter({ stand }: { stand: Stand }) {
   );
 }
 
-function ClueFooter({ stand }: { stand: Stand }) {
+function ClueFooter() {
   const [clue] = useClueContext();
+  const stand = React.useContext(StandContext);
   const tokenNumbers = [];
   for (const [index, token] of clue.entries()) {
     if (tokenMatchesStand(token, stand)) {
@@ -174,8 +178,9 @@ function ClueFooter({ stand }: { stand: Stand }) {
   );
 }
 
-function ConnectionTag({ stand }: { stand: Stand }) {
+function ConnectionTag() {
   const currentPlayerName = React.useContext(PlayerNameContext);
+  const stand = React.useContext(StandContext);
   if (stand.kind == "npc" || stand.kind == "wild") {
     return (
       <Tag title="Non-player character">
@@ -205,8 +210,9 @@ function ConnectionTag({ stand }: { stand: Stand }) {
   );
 }
 
-function StandLetter({ stand }: { stand: Stand }) {
+function StandLetter() {
   const game = React.useContext(GameContext);
+  const stand = React.useContext(StandContext);
   const currentPlayerName = React.useContext(PlayerNameContext);
   const [, clueDispatch] = useClueContext();
 
@@ -249,21 +255,23 @@ function StandLetter({ stand }: { stand: Stand }) {
 function StandElement({ stand }: { stand: Stand }) {
   const game = React.useContext(GameContext);
   return (
-    <div className="stand card">
-      <header className="card-header">
-        <div className="card-header-title">
-          <span>{standName(stand)}&nbsp;</span>
-          <ConnectionTag stand={stand} />
+    <StandContext value={stand}>
+      <div className="stand card">
+        <header className="card-header">
+          <div className="card-header-title">
+            <span>{standName(stand)}&nbsp;</span>
+            <ConnectionTag />
+          </div>
+        </header>
+        <div className="card-content">
+          <StandLetter />
         </div>
-      </header>
-      <div className="card-content">
-        <StandLetter stand={stand} />
+        {game.phase.name == "vote" && <VoteFooter />}
+        {(game.phase.name == "clue" || game.phase.name == "guess") && (
+          <ClueFooter />
+        )}
       </div>
-      {game.phase.name == "vote" && <VoteFooter stand={stand} />}
-      {(game.phase.name == "clue" || game.phase.name == "guess") && (
-        <ClueFooter stand={stand} />
-      )}
-    </div>
+    </StandContext>
   );
 }
 
