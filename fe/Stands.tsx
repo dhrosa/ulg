@@ -1,11 +1,4 @@
-import {
-  Player,
-  Npc,
-  GameContext,
-  PlayerNameContext,
-  ClueCandidate,
-  Token,
-} from "./Game";
+import { Player, Npc, GameContext, PlayerNameContext, Token } from "./Game";
 import React from "react";
 import { toast } from "react-toastify";
 import Symbol from "./Symbol";
@@ -15,12 +8,55 @@ import { motion } from "motion/react";
 import Tag from "./Tag";
 import NumberToken from "./NumberToken";
 
-function ClueCandidateElement({
-  clueCandidate,
-}: {
-  clueCandidate: ClueCandidate;
-}) {
-  const c = clueCandidate;
+type Stand =
+  | { kind: "player"; player: Player }
+  | { kind: "npc"; npc: Npc }
+  | { kind: "wild" };
+
+const StandContext = React.createContext<Stand>({} as Stand);
+
+function standName(stand: Stand) {
+  switch (stand.kind) {
+    case "player":
+      return stand.player.name;
+    case "npc":
+      return stand.npc.name;
+    case "wild":
+      return "wild";
+  }
+}
+
+function standLetter(stand: Stand) {
+  switch (stand.kind) {
+    case "player":
+      return stand.player.letter;
+    case "npc":
+      return stand.npc.letter;
+    case "wild":
+      return "*";
+  }
+}
+
+function tokenMatchesStand(token: Token, stand: Stand) {
+  if (stand.kind == "player" && token.kind == "player") {
+    return token.playerName == stand.player.name;
+  }
+  if (stand.kind == "npc" && token.kind == "npc") {
+    return token.npcName == stand.npc.name;
+  }
+  return stand.kind == "wild" && token.kind == "wild";
+}
+
+function ClueCandidateInfo() {
+  const game = React.useContext(GameContext);
+  const stand = React.useContext(StandContext);
+  if (game.phase.name != "vote" || stand.kind != "player") {
+    return false;
+  }
+  const c = stand.player.clueCandidate;
+  if (!c) {
+    return <p title="Player has not proposed a clue candidate">∅</p>;
+  }
   const helpTextParts = [];
   if (c.playerCount) {
     helpTextParts.push(
@@ -62,58 +98,16 @@ function ClueCandidateElement({
   );
 }
 
-type Stand =
-  | { kind: "player"; player: Player }
-  | { kind: "npc"; npc: Npc }
-  | { kind: "wild" };
-
-const StandContext = React.createContext<Stand>({} as Stand);
-
-function standName(stand: Stand) {
-  switch (stand.kind) {
-    case "player":
-      return stand.player.name;
-    case "npc":
-      return stand.npc.name;
-    case "wild":
-      return "wild";
-  }
-}
-
-function standLetter(stand: Stand) {
-  switch (stand.kind) {
-    case "player":
-      return stand.player.letter;
-    case "npc":
-      return stand.npc.letter;
-    case "wild":
-      return "*";
-  }
-}
-
-function tokenMatchesStand(token: Token, stand: Stand) {
-  if (stand.kind == "player" && token.kind == "player") {
-    return token.playerName == stand.player.name;
-  }
-  if (stand.kind == "npc" && token.kind == "npc") {
-    return token.npcName == stand.npc.name;
-  }
-  return stand.kind == "wild" && token.kind == "wild";
-}
-
-function VoteFooter() {
+function VoteInfo() {
   const game = React.useContext(GameContext);
   const currentPlayerName = React.useContext(PlayerNameContext);
   const currentPlayer = game.player(currentPlayerName);
   const stand = React.useContext(StandContext);
 
-  if (stand.kind != "player") {
+  if (game.phase.name != "vote" || stand.kind != "player") {
     return false;
   }
   const player = stand.player;
-  if (!player.clueCandidate) {
-    return false;
-  }
 
   let voteCount = 0;
   for (const p of game.players) {
@@ -137,27 +131,25 @@ function VoteFooter() {
 
   const voted = currentPlayer.vote == player.name;
   return (
-    <footer className="card-footer">
-      <div className="card-footer-item">
-        <ClueCandidateElement clueCandidate={player.clueCandidate} />
-      </div>
-      <div className="card-footer-item">
-        <button
-          className={"button " + (voted ? "is-primary" : "")}
-          onClick={() => vote(voted ? "" : player.name)}
-        >
-          {voteCount} / {game.players.length}
-          &nbsp;
-          <Symbol name="thumb_up" />
-        </button>
-      </div>
-    </footer>
+    <button
+      className={"button " + (voted ? "is-primary" : "")}
+      onClick={() => vote(voted ? "" : player.name)}
+    >
+      {voteCount} / {game.players.length}
+      &nbsp;
+      <Symbol name="thumb_up" />
+    </button>
   );
 }
 
-function ClueFooter() {
+function ClueInfo() {
+  const game = React.useContext(GameContext);
   const [clue] = useClueContext();
   const stand = React.useContext(StandContext);
+  if (game.phase.name != "clue" && game.phase.name != "guess") {
+    return false;
+  }
+
   const tokenNumbers = [];
   for (const [index, token] of clue.entries()) {
     if (tokenMatchesStand(token, stand)) {
@@ -165,16 +157,16 @@ function ClueFooter() {
       continue;
     }
   }
+  // We insert an invisible token to ensure this stands aligns with the others if it's not part of the current clue.
   return (
-    <footer className="card-footer">
-      <div className="card-footer-item">
-        <div className="tags tokens">
-          {tokenNumbers.map((n) => (
-            <NumberToken n={n} key={n} />
-          ))}
-        </div>
-      </div>
-    </footer>
+    <div className="tags tokens">
+      {tokenNumbers.map((n) => (
+        <NumberToken n={n} key={n} />
+      ))}
+      {tokenNumbers.length == 0 && (
+        <NumberToken style={{ visibility: "hidden" }} n={0} />
+      )}
+    </div>
   );
 }
 
@@ -253,7 +245,6 @@ function StandLetter() {
 }
 
 function StandElement({ stand }: { stand: Stand }) {
-  const game = React.useContext(GameContext);
   return (
     <StandContext value={stand}>
       <div className="stand card">
@@ -265,11 +256,10 @@ function StandElement({ stand }: { stand: Stand }) {
         </header>
         <div className="card-content">
           <StandLetter />
+          <ClueCandidateInfo />
+          <VoteInfo />
+          <ClueInfo />
         </div>
-        {game.phase.name == "vote" && <VoteFooter />}
-        {(game.phase.name == "clue" || game.phase.name == "guess") && (
-          <ClueFooter />
-        )}
       </div>
     </StandContext>
   );

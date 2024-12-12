@@ -1,6 +1,10 @@
 import Tag from "./Tag";
+import React from "react";
 
-export default function NumberToken({ n }: { n: number }) {
+export default function NumberToken({
+  n,
+  ...rest
+}: { n: number } & React.ComponentProps<"div">) {
   const hslColors = [
     "0 100% 84%",
     "33 100% 84%",
@@ -13,7 +17,11 @@ export default function NumberToken({ n }: { n: number }) {
   ];
   const color = `hsl(${hslColors[(n - 1) % hslColors.length]})`;
   return (
-    <Tag className="token is-rounded" style={{ backgroundColor: color }}>
+    <Tag
+      className="token is-rounded"
+      style={{ backgroundColor: color }}
+      {...rest}
+    >
       {n}
     </Tag>
   );
