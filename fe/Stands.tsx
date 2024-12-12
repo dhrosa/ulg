@@ -244,6 +244,43 @@ function StandLetter() {
   );
 }
 
+function DeleteButton() {
+  const stand = React.useContext(StandContext);
+  const game = React.useContext(GameContext);
+  const [pending, startTransition] = React.useTransition();
+  if (game.phase.name != "lobby" || stand.kind != "player") {
+    return false;
+  }
+
+  const player = stand.player;
+  const deletePlayer = async () => {
+    const response = await fetch(game.playerUrl(player.name), {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      toast.error("Failed to remove player.");
+      console.error(response);
+      return;
+    }
+  };
+  return (
+    <button
+      className={"button " + (pending ? "is-loading" : "")}
+      disabled={stand.player.connected}
+      title={
+        stand.player.connected
+          ? "Cannot remove connected player."
+          : "Remove player from game."
+      }
+      onClick={() => {
+        startTransition(deletePlayer);
+      }}
+    >
+      <Symbol name="delete" />
+    </button>
+  );
+}
+
 function StandElement({ stand }: { stand: Stand }) {
   return (
     <StandContext value={stand}>
@@ -256,6 +293,7 @@ function StandElement({ stand }: { stand: Stand }) {
         </header>
         <div className="card-content">
           <StandLetter />
+          <DeleteButton />
           <ClueCandidateInfo />
           <VoteInfo />
           <ClueInfo />
