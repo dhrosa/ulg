@@ -63,6 +63,7 @@ function InProgressForm({
           key={p.name}
           className="button"
           disabled={p.connected}
+          autoFocus
           onClick={() => {
             setPlayerName(p.name);
           }}
