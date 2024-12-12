@@ -21,10 +21,28 @@ function ClueCandidateElement({
   clueCandidate: ClueCandidate;
 }) {
   const c = clueCandidate;
+  const helpTextParts = [];
+  if (c.playerCount) {
+    helpTextParts.push(
+      ` Uses ${c.playerCount.toString()} player letter${c.playerCount > 1 ? "s" : ""}.`
+    );
+  }
+  if (c.npcCount) {
+    helpTextParts.push(
+      ` Uses ${c.npcCount.toString()} NPC letter${c.npcCount > 1 ? "s" : ""}.`
+    );
+  }
+  if (c.wild) {
+    helpTextParts.push(" Uses a wild letter.");
+  }
+
+  const helpText =
+    `This player's clue candidate is ${c.length.toString()} letters long.` +
+    helpTextParts.join("");
   return (
-    <div className="clue-candidate">
+    <div className="clue-candidate" title={helpText}>
       <span className="value">{c.length}</span>
-      <span>C</span>
+      <span>L</span>
 
       <span>-</span>
       <span className="value">{c.playerCount}</span>
@@ -90,6 +108,9 @@ function VoteFooter({ stand }: { stand: Stand }) {
     return false;
   }
   const player = stand.player;
+  if (!player.clueCandidate) {
+    return false;
+  }
 
   let voteCount = 0;
   for (const p of game.players) {
@@ -114,21 +135,19 @@ function VoteFooter({ stand }: { stand: Stand }) {
   const voted = currentPlayer.vote == player.name;
   return (
     <footer className="card-footer">
-      <button
-        className={"card-footer-item button " + (voted ? "is-primary" : "")}
-        onClick={() => vote(voted ? "" : player.name)}
-      >
-        <Symbol name="thumb_up" />
-      </button>
-      <div className="card-footer-item is-flex is-flex-direction-column">
-        {player.clueCandidate && (
-          <ClueCandidateElement clueCandidate={player.clueCandidate} />
-        )}
-        <div>{voteCount}&nbsp;votes</div>
+      <div className="card-footer-item">
+        <ClueCandidateElement clueCandidate={player.clueCandidate} />
       </div>
-      <button className="card-footer-item button" onClick={() => vote("")}>
-        <Symbol name="thumb_down" />
-      </button>
+      <div className="card-footer-item">
+        <button
+          className={"button " + (voted ? "is-primary" : "")}
+          onClick={() => vote(voted ? "" : player.name)}
+        >
+          {voteCount} / {game.players.length}
+          &nbsp;
+          <Symbol name="thumb_up" />
+        </button>
+      </div>
     </footer>
   );
 }

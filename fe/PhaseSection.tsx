@@ -52,6 +52,14 @@ function VotePhaseSection() {
   if (game.phase.name != "vote") {
     return false;
   }
+  let haveAnyCandidates = false;
+  for (const player of game.players) {
+    if (player.clueCandidate) {
+      haveAnyCandidates = true;
+      break;
+    }
+  }
+
   return (
     <section className="section vote-phase">
       <h1 className="title">Vote Phase</h1>
@@ -64,6 +72,12 @@ function VotePhaseSection() {
           The game proceeds to the Clue Phase when the majority players have
           voted for one player.
         </p>
+        {haveAnyCandidates || (
+          <p className="has-text-warning">
+            No players have proposed any clue candidates yet.
+          </p>
+        )}
+
         <p>Propose your own clue candidate below.</p>
       </div>
       <div className="box">

@@ -114,9 +114,9 @@ export default function ClueCandidateEditor() {
           <Input
             type="number"
             name="length"
-            min={1}
+            min={2}
             max={99}
-            defaultValue={candidate?.length ?? 1}
+            defaultValue={candidate?.length ?? 2}
           />
         </Control>
       </Field>
