@@ -244,6 +244,28 @@ function StandLetter() {
   );
 }
 
+function DeckInfo() {
+  const game = React.useContext(GameContext);
+  const stand = React.useContext(StandContext);
+  if (game.phase.name == "lobby" || stand.kind == "wild") {
+    return false;
+  }
+  const deckSize =
+    stand.kind == "player" ? stand.player.deckSize : stand.npc.deckSize;
+  const help =
+    stand.kind == "player"
+      ? "Number of unseen cards remaining in this player's secret word."
+      : "Number of cards remaining in this NPC's deck.";
+  return (
+    <span className="icon-text" title={help}>
+      <span className="icon">
+        <Symbol name="playing_cards" />
+      </span>
+      {deckSize}
+    </span>
+  );
+}
+
 function DeleteButton() {
   const stand = React.useContext(StandContext);
   const game = React.useContext(GameContext);
@@ -293,6 +315,7 @@ function StandElement({ stand }: { stand: Stand }) {
         </header>
         <div className="card-content">
           <StandLetter />
+          <DeckInfo />
           <DeleteButton />
           <ClueCandidateInfo />
           <VoteInfo />

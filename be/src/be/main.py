@@ -115,6 +115,7 @@ class Player:
             clue_candidate=self.clue_candidate,
             vote=self.vote,
             letter=self.letter,
+            deck_size=len(self.secret_deck),
             guess_state=self.guess_state,
         )
 
