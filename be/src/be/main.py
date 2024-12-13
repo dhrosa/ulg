@@ -218,9 +218,12 @@ class Game:
     def maybe_finish_guess_phase(self) -> None:
         assert isinstance(self.phase, GuessPhase)
         undecided_player_names = set[str]()
+        npc_names_in_clue = set[str]()
         for token in self.phase.clue:
             if isinstance(token, TokenOnPlayer):
                 undecided_player_names.add(token.player_name)
+            elif isinstance(token, TokenOnNpc):
+                npc_names_in_clue.add(token.npc_name)
 
         for player in self.players.values():
             if player.guess_state:
@@ -231,8 +234,22 @@ class Game:
 
         # Next round
         for player in self.players.values():
+            if player.guess_state == "move_on":
+                if player.secret_deck:
+                    player.letter = player.secret_deck.pop()
+                else:
+                    player.letter = self.deck.pop()
             player.guess_state = ""
             player.vote = ""
+
+        for npc in self.npcs:
+            if npc.name not in npc_names_in_clue:
+                continue
+            if npc.secret_deck:
+                npc.letter = npc.secret_deck.pop()
+            else:
+                npc.letter = self.deck.pop()
+
         self.phase = VotePhase()
 
 
