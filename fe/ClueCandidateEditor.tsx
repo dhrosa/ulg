@@ -157,11 +157,14 @@ export default function ClueCandidateEditor() {
       </Field>
 
       <SubmitButton>Propose</SubmitButton>
-      {candidate && (
-        <button className="button" onClick={deleteCandidate}>
-          Retract
-        </button>
-      )}
+
+      <button
+        className="button"
+        onClick={deleteCandidate}
+        disabled={!candidate}
+      >
+        Retract
+      </button>
     </form>
   );
 }

@@ -75,22 +75,23 @@ function ClueCandidateInfo() {
   const helpText =
     `This player's clue candidate is ${c.length.toString()} letters long.` +
     helpTextParts.join("");
+  const sep = "  ";
   return (
     <div className="clue-candidate" title={helpText}>
       <span className="value">{c.length}</span>
       <span>L</span>
 
-      <span>-</span>
+      <span>{sep}</span>
       <span className="value">{c.playerCount}</span>
       <span>P</span>
 
-      <span>-</span>
+      <span>{sep}</span>
       <span className="value">{c.npcCount}</span>
       <span>N</span>
 
       {c.wild && (
         <>
-          <span>-</span>
+          <span>{sep}</span>
           <span className="value">*</span>
         </>
       )}

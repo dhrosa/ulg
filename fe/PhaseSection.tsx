@@ -166,8 +166,8 @@ function GuessPhaseSection() {
       <div className="block">
         {playerInClue ? (
           <p>
-            Given the clue below, decide whether you will stay on your current
-            letter or move on.
+            Given the clue below, decide whether you will move on to the next
+            letter or stay on your current letter.
           </p>
         ) : (
           <p>
@@ -183,7 +183,7 @@ function GuessPhaseSection() {
       {playerInClue && (
         <div className="block">
           <button
-            className="button"
+            className="button is-primary"
             onClick={async () => {
               await setGuessState("move_on");
             }}
