@@ -6,6 +6,7 @@ import GameListPage from "./GameListPage";
 import NewGamePage from "./NewGamePage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import WordsPage from "./WordsPage";
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="/" element={<GameListPage />} />
           <Route path="/:gameId" element={<GamePage />} />
           <Route path="/new" element={<NewGamePage />} />
+          <Route path="/words" element={<WordsPage />} />
         </Routes>
       </main>
     </div>

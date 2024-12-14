@@ -50,6 +50,7 @@ export default function Nav() {
         <div className="navbar-end">
           <NavLink href="/" label="Home" />
           <NavLink href="/new" label="New Game" />
+          <NavLink href="/words" label="Words" />
         </div>
       </div>
     </nav>

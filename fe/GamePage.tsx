@@ -8,6 +8,7 @@ import LoggedOutPage from "./LoggedOutPage";
 import PhaseSection from "./PhaseSection";
 import Symbol from "./Symbol";
 import { useCopyToClipboard } from "react-use";
+import WordSearch from "./WordSearch";
 
 function readyStateName(readyState: ReadyState) {
   switch (readyState) {
@@ -109,6 +110,7 @@ function LoggedInPage() {
           <GameInfo connectionStatus={readyStateName(readyState)} />
           <Stands />
           <PhaseSection />
+          <WordSearch />
           <DebugInfo />
         </div>
       </ClueContextProvider>
