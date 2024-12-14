@@ -191,7 +191,7 @@ class Game:
     def _deal_secret_words(self) -> None:
         secret_words = deal_words(
             self.deck,
-            english(),
+            set(english()),
             num_words=len(self.players),
             word_length=self.settings.player_word_length,
         )
@@ -409,3 +409,8 @@ async def player_set_guess_state(
     player.guess_state = request.guess_state
     game.maybe_finish_guess_phase()
     await game.broadcast()
+
+
+@app.get("/words")
+async def get_words() -> list[str]:
+    return english()

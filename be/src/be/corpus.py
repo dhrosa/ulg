@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 @cache
-def english() -> set[str]:
+def english() -> list[str]:
     all_lower = re.compile("^[a-z]+$")
     words = set[str]()
     with (Path(__file__).parent / "english.txt").open() as f:
@@ -15,4 +15,4 @@ def english() -> set[str]:
             if re.match(all_lower, word):
                 words.add(word.upper())
 
-    return words
+    return sorted(words, key=lambda w: (len(w), w))
