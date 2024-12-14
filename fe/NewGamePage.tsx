@@ -18,7 +18,7 @@ export default function NewGamePage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          playerWordLength: 3,
+          playerWordLength: 5,
         }),
       });
       if (!response.ok) {
