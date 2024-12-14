@@ -117,6 +117,7 @@ export default function WordSearch() {
 
   const [results, setResults] = React.useState<string[]>([]);
   const [matchType, setMatchType] = React.useState<MatchType>("start");
+  const [query, setQuery] = React.useState("");
 
   const matches = (a: string, b: string): boolean => {
     switch (matchType) {
@@ -129,15 +130,16 @@ export default function WordSearch() {
     }
   };
 
-  const search = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const query = event.target.value.toUpperCase();
-    if (!corpus || !query.length) {
+  React.useEffect(() => {
+    if (!corpus) {
+      return;
+    }
+    if (!query.length) {
       setResults([]);
       return;
     }
-
     setResults(corpus.filter((word) => matches(word, query)));
-  };
+  }, [matchType, query]);
 
   return (
     <section className="section word-search">
@@ -178,7 +180,10 @@ export default function WordSearch() {
                 <Input
                   type="text"
                   placeholder="Start typing a word..."
-                  onChange={search}
+                  value={query}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    setQuery(event.target.value.toUpperCase());
+                  }}
                 />
               </Control>
             </Field>

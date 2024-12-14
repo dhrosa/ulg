@@ -39,11 +39,9 @@ main {
 .word-search {
   input {
     @extend .is-family-monospace;
-    text-transform: uppercase;
 
     &::placeholder {
       @extend .is-family-sans-serif;
-      text-transform: none;
     }
   }
   .results {
