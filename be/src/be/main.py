@@ -233,6 +233,16 @@ class Game:
             return
 
         # Next round
+        self._advance_letters()
+        self.phase = VotePhase()
+
+    def _advance_letters(self) -> None:
+        assert isinstance(self.phase, GuessPhase)
+        npc_names_in_clue = set[str]()
+        for token in self.phase.clue:
+            if isinstance(token, TokenOnNpc):
+                npc_names_in_clue.add(token.npc_name)
+
         for player in self.players.values():
             if player.guess_state == "move_on":
                 if player.secret_deck:
@@ -249,8 +259,6 @@ class Game:
                 npc.letter = npc.secret_deck.pop()
             else:
                 npc.letter = self.deck.pop()
-
-        self.phase = VotePhase()
 
 
 app = FastAPI(root_url="/api", lifespan=lifespan)
