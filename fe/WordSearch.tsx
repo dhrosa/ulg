@@ -58,7 +58,8 @@ function Pagination({
 }
 
 function Results({ results }: { results: string[] }) {
-  const wordsPerPage = 25;
+  const wordsPerColumn = 10;
+  const wordsPerPage = wordsPerColumn * 5;
   const pageCount = Math.ceil(results.length / wordsPerPage);
   const [page, setPage] = React.useState(0);
 
@@ -66,15 +67,26 @@ function Results({ results }: { results: string[] }) {
     setPage(0);
   }, [results]);
 
-  const pageStart = page * wordsPerPage;
-  const pageEnd = Math.min(pageStart + wordsPerPage, results.length);
+  const resultsPage = results.slice(
+    page * wordsPerPage,
+    (page + 1) * wordsPerPage
+  );
+  const columnCount = Math.ceil(resultsPage.length / wordsPerColumn);
   return (
     <>
       <Pagination page={page} setPage={setPage} pageCount={pageCount} />
       <div className="results block">
-        {results.slice(pageStart, pageEnd).map((result) => (
-          <div key={result}>{result}</div>
-        ))}
+        <div className="columns">
+          {range(columnCount).map((c) => (
+            <div key={c} className="column">
+              {resultsPage
+                .slice(c * wordsPerColumn, (c + 1) * wordsPerColumn)
+                .map((word) => (
+                  <div key={word}>{word}</div>
+                ))}
+            </div>
+          ))}
+        </div>
       </div>
       <Pagination page={page} setPage={setPage} pageCount={pageCount} />
     </>
@@ -108,7 +120,7 @@ export default function WordSearch() {
   };
 
   return (
-    <section className="section">
+    <section className="section word-search">
       <h2 className="subtitle">Word Lookup Tool</h2>
 
       {loading && (
