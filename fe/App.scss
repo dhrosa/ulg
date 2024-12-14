@@ -48,6 +48,11 @@ main {
   }
   .results {
     @extend .is-family-monospace;
+
+    .length {
+      @extend .has-text-grey;
+      font-size: 0.8em;
+    }
   }
 }
 

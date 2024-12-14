@@ -82,7 +82,13 @@ function Results({ results }: { results: string[] }) {
               {resultsPage
                 .slice(c * wordsPerColumn, (c + 1) * wordsPerColumn)
                 .map((word) => (
-                  <div key={word}>{word}</div>
+                  <div key={word}>
+                    <span className="length">
+                      {word.length.toString().padStart(2, "\xA0")}
+                      &nbsp;·&nbsp;
+                    </span>
+                    <span>{word}</span>
+                  </div>
                 ))}
             </div>
           ))}
@@ -135,7 +141,7 @@ export default function WordSearch() {
 
   return (
     <section className="section word-search">
-      <h2 className="subtitle">Word Lookup Tool</h2>
+      <h2 className="subtitle">Word Search</h2>
 
       {loading && (
         <div className="block is-inline-flex is-align-items-center">
