@@ -1,5 +1,5 @@
 import React from "react";
-import { Field, Control, Input } from "./Form";
+import { Field, Label, Control, Input } from "./Form";
 import { useAsync } from "react-use";
 import Symbol from "./Symbol";
 
@@ -93,6 +93,8 @@ function Results({ results }: { results: string[] }) {
   );
 }
 
+type MatchType = "start" | "middle" | "end";
+
 export default function WordSearch() {
   const {
     loading,
@@ -108,6 +110,18 @@ export default function WordSearch() {
   });
 
   const [results, setResults] = React.useState<string[]>([]);
+  const [matchType, setMatchType] = React.useState<MatchType>("start");
+
+  const matches = (a: string, b: string): boolean => {
+    switch (matchType) {
+      case "start":
+        return a.startsWith(b);
+      case "middle":
+        return a.includes(b);
+      case "end":
+        return a.endsWith(b);
+    }
+  };
 
   const search = (event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value.toUpperCase();
@@ -116,7 +130,7 @@ export default function WordSearch() {
       return;
     }
 
-    setResults(corpus.filter((word) => word.startsWith(query)));
+    setResults(corpus.filter((word) => matches(word, query)));
   };
 
   return (
@@ -134,7 +148,25 @@ export default function WordSearch() {
 
       {corpus && (
         <>
-          <form className="form block">
+          <form className="form block" action={() => {}}>
+            <Field>
+              <Label>Match Type</Label>
+              <Control>
+                {(["start", "middle", "end"] as MatchType[]).map((type) => (
+                  <button
+                    className={
+                      "button " + (matchType == type ? "is-primary" : "")
+                    }
+                    key={type}
+                    onClick={() => {
+                      setMatchType(type);
+                    }}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </Control>
+            </Field>
             <Field>
               <Control>
                 <Input
