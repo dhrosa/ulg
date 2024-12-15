@@ -1,4 +1,5 @@
 import HtmlWebpackPlugin from "html-webpack-plugin";
+import * as sass from "sass-embedded";
 
 export default {
   entry: {
@@ -34,7 +35,21 @@ export default {
       },
       {
         test: /\.s?css$$/i,
-        use: ["style-loader", "css-loader", "sass-loader"],
+        use: [
+          "style-loader",
+          "css-loader",
+          {
+            loader: "sass-loader",
+            options: {
+              // Use sass-embedded
+              implementation: sass,
+              sassOptions: {
+                // Silence warnings from dependencies
+                quietDeps: true,
+              },
+            },
+          },
+        ],
       },
       {
         test: /\.(ts|tsx)$/,
