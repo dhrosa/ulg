@@ -228,6 +228,7 @@ class Game:
         for player in self.players.values():
             if player.guess_state:
                 undecided_player_names.discard(player.name)
+            player.clue_candidate = None
 
         if undecided_player_names:
             return
